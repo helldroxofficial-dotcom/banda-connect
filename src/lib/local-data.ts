@@ -1,0 +1,362 @@
+export const AREAS = [
+  "Station Road",
+  "Civil Lines",
+  "Degree College",
+  "Kalu Kuan",
+  "Mahaviriran",
+  "Nawalabad",
+] as const;
+
+export const FEES = {
+  packaging: 5,
+  freeDeliveryAbove: 149,
+  smallOrderBelow: 100,
+  smallOrderFee: 15,
+  standardFee: 25,
+  expressFee: 25,
+  inspection: 39,
+  atmFee: 20,
+};
+
+export type Stall = {
+  id: string;
+  name: string;
+  vendor: string;
+  location: string;
+  rating: number;
+  price: number;
+  imageKey: string;
+  model: "partner" | "pickup";
+  eta: string;
+};
+
+export const stalls: Stall[] = [
+  {
+    id: "f1",
+    name: "Kalu Kuan Famous Aloo Tikki Chaat",
+    vendor: "Pankaj Chaat Corner",
+    location: "Kalu Kuan, Banda",
+    rating: 4.8,
+    price: 40,
+    imageKey: "street-tikki",
+    model: "pickup",
+    eta: "20-30 min",
+  },
+  {
+    id: "f2",
+    name: "Railway Station Samosa & Kachori",
+    vendor: "Shukla Samosa Bhandar",
+    location: "Station Road, Banda",
+    rating: 4.9,
+    price: 20,
+    imageKey: "street-samosa",
+    model: "pickup",
+    eta: "20-30 min",
+  },
+  {
+    id: "f3",
+    name: "Gupta Ji Ke Special Veg Momos",
+    vendor: "Gupta Ji Ka Thela",
+    location: "Civil Lines, Banda",
+    rating: 4.7,
+    price: 50,
+    imageKey: "street-momos",
+    model: "partner",
+    eta: "15-20 min",
+  },
+  {
+    id: "f4",
+    name: "Chowk Special Golgappe (6 pcs)",
+    vendor: "Bhaiya Ji Pani Puri",
+    location: "Chowk Bazaar, Banda",
+    rating: 4.6,
+    price: 30,
+    imageKey: "street-golgappe",
+    model: "pickup",
+    eta: "25-30 min",
+  },
+];
+
+export type Shop = {
+  id: string;
+  name: string;
+  location: string;
+  tags: string;
+  imageKey: string;
+  rating: number;
+  eta: number;
+};
+
+export const shops: Shop[] = [
+  {
+    id: "sh1",
+    name: "Sahu Sweets & Bakery",
+    location: "Station Road, Banda",
+    tags: "Gulab Jamun • Peda • Cakes",
+    imageKey: "shop-sweets",
+    rating: 4.8,
+    eta: 25,
+  },
+  {
+    id: "sh2",
+    name: "Gupta General & Cosmetics",
+    location: "Babu Pura, Banda",
+    tags: "Cosmetics • Home Care • Toiletries",
+    imageKey: "shop-general",
+    rating: 4.6,
+    eta: 30,
+  },
+  {
+    id: "sh3",
+    name: "Banda Book Depot",
+    location: "Civil Lines, Banda",
+    tags: "Stationery • Exam Notes • Books",
+    imageKey: "shop-books",
+    rating: 4.7,
+    eta: 40,
+  },
+];
+
+export const tradeCategories = [
+  { id: "plumber", label: "Plumber", hindi: "प्लंबर" },
+  { id: "electrician", label: "Electrician", hindi: "इलेक्ट्रीशियन" },
+  { id: "bike", label: "Bike Mechanic", hindi: "बाइक मिस्त्री" },
+  { id: "carpenter", label: "Carpenter", hindi: "बढ़ई" },
+];
+
+export type Pro = {
+  id: string;
+  name: string;
+  trade: string;
+  location: string;
+  rating: number;
+  jobs: number;
+  imageKey: string;
+  experience: string;
+  distanceKm: number;
+  reelQuote: string;
+};
+
+export const pros: Pro[] = [
+  {
+    id: "sp1",
+    name: "Ramesh Kumar",
+    trade: "plumber",
+    location: "Alha Ghat, Banda",
+    rating: 4.8,
+    jobs: 320,
+    imageKey: "worker-plumber",
+    experience: "8 yrs exp",
+    distanceKm: 1.2,
+    reelQuote: "Tap leak 20 minute me theek kar diya, rate bhi fix tha.",
+  },
+  {
+    id: "sp2",
+    name: "Sonu Vishwakarma",
+    trade: "electrician",
+    location: "Civil Lines, Banda",
+    rating: 4.9,
+    jobs: 410,
+    imageKey: "worker-electrician",
+    experience: "12 yrs exp",
+    distanceKm: 2.4,
+    reelQuote: "Poore ghar ki wiring check ki, koi extra charge nahi liya.",
+  },
+  {
+    id: "sp3",
+    name: "Imran Bike Point",
+    trade: "bike",
+    location: "Station Road, Banda",
+    rating: 4.7,
+    jobs: 260,
+    imageKey: "worker-mechanic",
+    experience: "6 yrs exp",
+    distanceKm: 0.8,
+    reelQuote: "Ghar aake bike start kar di, mechanic dhoondhne ki zarurat nahi.",
+  },
+  {
+    id: "sp4",
+    name: "Deshraj Carpenter",
+    trade: "carpenter",
+    location: "Mataundh Road, Banda",
+    rating: 4.6,
+    jobs: 180,
+    imageKey: "worker-carpenter",
+    experience: "10 yrs exp",
+    distanceKm: 3.6,
+    reelQuote: "Almari ka door perfect fit kiya, kaam safai se hua.",
+  },
+];
+
+export const doctors = [
+  {
+    id: "d1",
+    name: "Dr. S. K. Tiwari",
+    speciality: "General Physician (MBBS, MD)",
+    clinic: "Tiwari Clinic, Station Road",
+    rating: 4.9,
+    fee: 300,
+    imageKey: "doctor-1",
+    homeVisit: true,
+  },
+  {
+    id: "d2",
+    name: "Dr. Anjali Verma",
+    speciality: "Child Specialist (Pediatrician)",
+    clinic: "Verma Child Care, Civil Lines",
+    rating: 4.8,
+    fee: 350,
+    imageKey: "doctor-2",
+    homeVisit: false,
+  },
+];
+
+export const labTests = [
+  { id: "l1", name: "Complete Blood Count (CBC)", price: 250, mrp: 400 },
+  { id: "l2", name: "Full Body Checkup (60 params)", price: 999, mrp: 1800 },
+  { id: "l3", name: "Diabetes Profile (HbA1c)", price: 450, mrp: 700 },
+  { id: "l4", name: "Thyroid Profile (T3 T4 TSH)", price: 400, mrp: 650 },
+];
+
+export type Listing = {
+  id: string;
+  title: string;
+  meta: string;
+  price: string;
+  location: string;
+  by: string;
+  type: "supply" | "demand";
+  distanceKm: number;
+  rating: number;
+};
+
+export const rentListings: Listing[] = [
+  {
+    id: "r1",
+    title: "1 BHK Furnished Room",
+    meta: "1 BHK • Furnished • Bachelors allowed",
+    price: "₹4,500 / month",
+    location: "Near Degree College, Banda",
+    by: "Owner: Mahesh Gupta",
+    type: "supply",
+    distanceKm: 1.5,
+    rating: 4.5,
+  },
+  {
+    id: "r2",
+    title: "2 BHK Family Flat",
+    meta: "2 BHK • Semi-furnished • Family only",
+    price: "₹8,000 / month",
+    location: "Civil Lines, Banda",
+    by: "Owner: Sunita Devi",
+    type: "supply",
+    distanceKm: 2.8,
+    rating: 4.7,
+  },
+  {
+    id: "r3",
+    title: "Student Single Room Needed",
+    meta: "Student • Budget under ₹2,500",
+    price: "Budget ₹2,500",
+    location: "Near Degree College",
+    by: "Student: Rahul",
+    type: "demand",
+    distanceKm: 1.1,
+    rating: 4.2,
+  },
+];
+
+export const tutorListings: Listing[] = [
+  {
+    id: "t1",
+    title: "Maths & Science Home Tutor",
+    meta: "Class 6-10 • CBSE / UP Board",
+    price: "₹1,200 / month",
+    location: "Station Road, Banda",
+    by: "Tutor: Amit Sir",
+    type: "supply",
+    distanceKm: 0.9,
+    rating: 4.8,
+  },
+  {
+    id: "t2",
+    title: "SSC CGL & Bank Coaching",
+    meta: "Reasoning • Quant • English",
+    price: "₹1,800 / month",
+    location: "Civil Lines, Banda",
+    by: "Tutor: Priya Ma'am",
+    type: "supply",
+    distanceKm: 2.2,
+    rating: 4.9,
+  },
+  {
+    id: "t3",
+    title: "Spoken English Tutor Needed",
+    meta: "Evening slot • Home visit",
+    price: "Budget ₹1,000",
+    location: "Babu Pura, Banda",
+    by: "Student: Neha",
+    type: "demand",
+    distanceKm: 1.7,
+    rating: 4.3,
+  },
+];
+
+export const skills = [
+  {
+    id: "sk1",
+    name: "Aarav Studio",
+    service: "Product & Pre-Wedding Photography",
+    location: "Station Road, Banda",
+    rating: 4.9,
+    startingAt: 2499,
+    imageKey: "skill-photographer",
+    tag: "Photographer",
+    distanceKm: 1.4,
+  },
+  {
+    id: "sk2",
+    name: "Banda Web Solutions",
+    service: "Website & App Development for Shops",
+    location: "Civil Lines, Banda",
+    rating: 4.8,
+    startingAt: 4999,
+    imageKey: "skill-developer",
+    tag: "Developer",
+    distanceKm: 2.6,
+  },
+  {
+    id: "sk3",
+    name: "Ansari Laptop Care",
+    service: "Laptop & Mobile Repair, Data Recovery",
+    location: "Chowk Bazaar, Banda",
+    rating: 4.7,
+    startingAt: 299,
+    imageKey: "skill-repair",
+    tag: "Repair",
+    distanceKm: 0.7,
+  },
+];
+
+export const faqs = [
+  {
+    q: "Kya shop wale se zyada paisa lagega? (Overcharging policy)",
+    a: "Bilkul nahi. Har item par printed MRP se kam ya barabar price hota hai. Rider extra cash nahi maang sakta — agar maange to order screen se report karein, poora amount wallet me wapas.",
+  },
+  {
+    q: "7-Day Warranty kaise kaam karti hai?",
+    a: "Grocery, electronics aur repair services par 7 din ka return/replacement. App ke My Orders me jaakar 'Report Issue' dabaiye, 24 ghante me pickup ya dobara visit free.",
+  },
+  {
+    q: "Free delivery kab milti hai?",
+    a: "₹149 se upar ke order par delivery bilkul free. ₹100 se kam ke order par ₹15 aur express (15 min) delivery par ₹25 lagta hai.",
+  },
+  {
+    q: "Mini-ATM (ghar par cash) kaise milta hai?",
+    a: "₹500 se ₹5,000 tak cash request kijiye, ₹20 convenience fee. Rider aapke ghar OTP verify karke cash deta hai aur amount aapke wallet/UPI se cut hota hai.",
+  },
+  {
+    q: "Local Bites me rider stall se kaise laata hai?",
+    a: "Zero-tech stalls ke liye rider khud stall par cash/UPI pay karta hai aur 20-30 min me aapko deliver karta hai. Aap app me hi pay karte hain.",
+  },
+];
