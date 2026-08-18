@@ -1,0 +1,221 @@
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Banknote, LogOut, ShieldCheck, Wallet } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useApp, rupees } from "@/lib/app-store";
+import { AREAS, FEES } from "@/lib/local-data";
+import { atmRequestsQuery } from "@/lib/queries";
+
+export const Route = createFileRoute("/profile")({
+  head: () => ({
+    meta: [
+      { title: "My Profile, Wallet & Mini-ATM | Banda Bazaar" },
+      {
+        name: "description",
+        content: "Manage your Banda Bazaar profile, delivery address, language, wallet and request Mini-ATM cash at home.",
+      },
+      { property: "og:title", content: "My Profile — Banda Bazaar" },
+      { property: "og:description", content: "Profile, wallet balance and Mini-ATM cash delivery in Banda." },
+    ],
+  }),
+  component: ProfilePage,
+});
+
+function ProfilePage() {
+  const { t, user, profile, authReady, isAdmin, signOut, area, setArea, lang, setLang, refreshProfile } = useApp();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ full_name: "", phone: "", address: "" });
+  const [saving, setSaving] = useState(false);
+  const [amount, setAmount] = useState(500);
+  const { data: atm = [] } = useQuery(atmRequestsQuery(Boolean(user)));
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        full_name: profile.full_name ?? "",
+        phone: profile.phone ?? "",
+        address: profile.address ?? "",
+      });
+      if (profile.area) setArea(profile.area);
+    }
+  }, [profile, setArea]);
+
+  if (authReady && !user) {
+    return (
+      <div className="rounded-2xl bg-card p-6 text-center shadow-card">
+        <p className="text-sm font-bold">{t("Sign in to manage your profile", "प्रोफ़ाइल के लिए साइन इन करें")}</p>
+        <Link to="/auth" className="press mt-3 inline-flex rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
+          {t("Sign in", "साइन इन")}
+        </Link>
+      </div>
+    );
+  }
+
+  const save = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ ...form, area, language: lang })
+      .eq("id", user.id);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await refreshProfile();
+    toast.success(t("Profile saved", "प्रोफ़ाइल सेव हो गई"));
+  };
+
+  const requestCash = async () => {
+    if (!user) return;
+    if (amount < 500 || amount > 5000) {
+      toast.error(t("Amount must be between ₹500 and ₹5,000", "राशि ₹500 से ₹5,000 के बीच होनी चाहिए"));
+      return;
+    }
+    const { error } = await supabase.from("mini_atm_requests").insert({
+      user_id: user.id,
+      amount,
+      fee: FEES.atmFee,
+      address: form.address || null,
+      phone: form.phone || null,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    void qc.invalidateQueries({ queryKey: ["atm-requests"] });
+    toast.success(t("Rider will bring cash to your door.", "राइडर आपके घर कैश लेकर आएगा।"));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-3xl bg-primary p-5 text-primary-foreground">
+        <p className="text-xs opacity-80">{t("Namaste", "नमस्ते")}</p>
+        <h1 className="text-xl font-black">{profile?.full_name || user?.email}</h1>
+        <p className="mt-2 flex items-center gap-2 text-sm">
+          <Wallet className="h-4 w-4" /> {t("Wallet", "वॉलेट")}: {rupees(Number(profile?.wallet_balance ?? 0))}
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-card p-4 shadow-card">
+        <p className="text-sm font-bold">{t("Delivery details", "डिलीवरी विवरण")}</p>
+        <div className="mt-3 space-y-2">
+          <input
+            value={form.full_name}
+            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+            placeholder={t("Full name", "पूरा नाम")}
+            className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
+          />
+          <input
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder={t("Phone", "फोन")}
+            className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
+          />
+          <textarea
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            placeholder={t("House no., street, landmark", "मकान नं., गली, लैंडमार्क")}
+            className="min-h-20 w-full rounded-xl bg-muted p-3 text-sm outline-none"
+          />
+          <select
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+            className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
+          >
+            {AREAS.map((a) => (
+              <option key={a} value={a}>
+                {a}, Banda
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center justify-between rounded-xl bg-muted px-3 py-2">
+            <span className="text-sm">{t("Language", "भाषा")}</span>
+            <button
+              type="button"
+              onClick={() => setLang(lang === "en" ? "hi" : "en")}
+              className="press rounded-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"
+            >
+              {lang === "en" ? "English" : "हिंदी"}
+            </button>
+          </div>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void save()}
+            className="press w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
+          >
+            {saving ? t("Saving…", "सेव हो रहा…") : t("Save profile", "प्रोफ़ाइल सेव करें")}
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl bg-card p-4 shadow-card">
+        <p className="flex items-center gap-2 text-sm font-bold">
+          <Banknote className="h-4 w-4 text-primary" /> Mini-ATM · {t("cash at home", "घर पर कैश")}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t(`₹500–₹5,000 · fee ₹${FEES.atmFee} · OTP verified delivery`, `₹500–₹5,000 · फीस ₹${FEES.atmFee} · OTP से डिलीवरी`)}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[500, 1000, 2000, 5000].map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAmount(a)}
+              className={`press rounded-xl border px-3 py-1.5 text-xs font-bold ${
+                amount === a ? "border-primary bg-primary-soft text-accent-foreground" : "border-border"
+              }`}
+            >
+              {rupees(a)}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => void requestCash()}
+          className="press mt-3 w-full rounded-xl bg-amber py-3 text-sm font-bold text-amber-foreground"
+        >
+          {t("Request cash", "कैश मंगाएं")} · {rupees(amount)} + {rupees(FEES.atmFee)}
+        </button>
+        {atm.length > 0 && (
+          <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+            {atm.slice(0, 3).map((r) => (
+              <li key={r.id} className="flex justify-between">
+                <span>{rupees(Number(r.amount))}</span>
+                <span className="font-semibold uppercase">{r.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {isAdmin && (
+        <Link to="/admin" className="press flex items-center gap-2 rounded-2xl bg-card p-4 text-sm font-bold shadow-card">
+          <ShieldCheck className="h-4 w-4 text-primary" /> {t("Admin dashboard", "एडमिन डैशबोर्ड")}
+        </Link>
+      )}
+
+      <Link to="/help" className="press block rounded-2xl bg-card p-4 text-sm font-bold shadow-card">
+        {t("Help & policies", "मदद और नीतियां")}
+      </Link>
+
+      <button
+        type="button"
+        onClick={async () => {
+          await qc.cancelQueries();
+          qc.clear();
+          await signOut();
+          void navigate({ to: "/auth", replace: true });
+        }}
+        className="press flex w-full items-center justify-center gap-2 rounded-2xl border border-border py-3 text-sm font-bold text-destructive"
+      >
+        <LogOut className="h-4 w-4" /> {t("Sign out", "साइन आउट")}
+      </button>
+    </div>
+  );
+}
