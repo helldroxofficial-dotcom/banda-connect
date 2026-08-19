@@ -13,6 +13,7 @@ import {
   skills,
   tradeCategories,
   tutorListings,
+  demandCategories,
   FEES,
 } from "@/lib/local-data";
 import { img } from "@/lib/images";
@@ -79,6 +80,7 @@ function Services() {
 
       {tab === "workers" && (
         <div className="animate-tab-in space-y-3">
+          <DemandStrip category="workers" />
           <p className="rounded-2xl bg-primary-soft p-3 text-xs font-semibold text-accent-foreground">
             🛠 {t(
               `Inspection visit ₹${FEES.inspection} — adjusted in the final bill. Rates are fixed, no bargaining.`,
@@ -133,7 +135,9 @@ function Services() {
       )}
 
       {tab === "skills" && (
-        <div className="animate-tab-in grid gap-3 sm:grid-cols-2">
+        <div className="animate-tab-in space-y-3">
+          <DemandStrip category="skills" />
+          <div className="grid gap-3 sm:grid-cols-2">
           {skills.map((s) => (
             <div key={s.id} className="overflow-hidden rounded-2xl bg-card shadow-card">
               <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="h-32 w-full object-cover" />
@@ -164,6 +168,7 @@ function Services() {
 
       {tab === "health" && (
         <div className="animate-tab-in space-y-3">
+          <DemandStrip category="health" />
           {doctors.map((d) => (
             <div key={d.id} className="flex gap-3 rounded-2xl bg-card p-3 shadow-card">
               <img src={img(d.imageKey)} alt={d.name} loading="lazy" className="h-16 w-16 rounded-xl object-cover" />
@@ -261,7 +266,7 @@ function DemandBoard() {
   const { t, user, area } = useApp();
   const qc = useQueryClient();
   const { data: posts = [] } = useQuery(demandPostsQuery());
-  const [form, setForm] = useState({ title: "", category: "service", budget: "", details: "", contact: "" });
+  const [form, setForm] = useState({ title: "", category: "workers", budget: "", details: "", contact: "" });
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -284,7 +289,8 @@ function DemandBoard() {
       toast.error(error.message);
       return;
     }
-    setForm({ title: "", category: "service", budget: "", details: "", contact: "" });
+    setForm({ title: "", category: "workers", budget: "", details: "", contact: "" });
+    void qc.invalidateQueries({ queryKey: ["my-demand-posts"] });
     void qc.invalidateQueries({ queryKey: ["demand-posts"] });
     toast.success(t("Posted! Local sellers will contact you.", "पोस्ट हो गया! लोकल विक्रेता संपर्क करेंगे।"));
   };
@@ -309,10 +315,12 @@ function DemandBoard() {
               onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="h-11 rounded-xl bg-muted px-3 text-sm outline-none"
             >
-              <option value="service">{t("Service", "सर्विस")}</option>
-              <option value="product">{t("Product", "सामान")}</option>
-              <option value="room">{t("Room", "कमरा")}</option>
-              <option value="tutor">{t("Tutor", "ट्यूटर")}</option>
+              <option value="workers">{t("Worker / Mistri", "मिस्त्री")}</option>
+              <option value="skills">{t("Skill / Freelancer", "स्किल")}</option>
+              <option value="health">{t("Health / Doctor", "स्वास्थ्य")}</option>
+              <option value="rooms">{t("Room / Rent", "कमरा")}</option>
+              <option value="tutors">{t("Tutor", "ट्यूटर")}</option>
+              <option value="product">{t("Product / Saman", "सामान")}</option>
             </select>
             <input
               value={form.budget}
@@ -362,6 +370,43 @@ function DemandBoard() {
             {p.details && <p className="mt-1 text-xs text-muted-foreground">{p.details}</p>}
             <p className="mt-1 text-[11px] text-muted-foreground">
               {p.location ?? "Banda"} {p.budget ? `· ${p.budget}` : ""} · {new Date(p.created_at).toLocaleDateString("en-IN")}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DemandStrip({ category }: { category: string }) {
+  const { t } = useApp();
+  const navigate = useNavigate();
+  const { data: posts = [] } = useQuery(demandPostsQuery());
+  const list = posts.filter((p) => p.category === category).slice(0, 5);
+  const label = demandCategories.find((c) => c.id === category)?.label ?? category;
+  if (list.length === 0) return null;
+
+  return (
+    <div className="animate-rise rounded-2xl border border-amber bg-amber-soft p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-black uppercase tracking-wide text-amber-foreground">
+          🔔 {t(`Live needs in ${label}`, `${label} में लाइव ज़रूरतें`)} ({list.length})
+        </p>
+        <button
+          type="button"
+          onClick={() => void navigate({ to: "/services", search: { tab: "demand" } })}
+          className="press text-[11px] font-bold text-amber-foreground underline"
+        >
+          {t("Post yours", "अपनी पोस्ट करें")}
+        </button>
+      </div>
+      <div className="mt-2 space-y-2">
+        {list.map((p) => (
+          <div key={p.id} className="rounded-xl bg-card p-2 shadow-card">
+            <p className="text-xs font-bold">{p.title}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {p.location ?? "Banda"} {p.budget ? `· ${p.budget}` : ""} ·{" "}
+              {new Date(p.created_at).toLocaleDateString("en-IN")}
             </p>
           </div>
         ))}
