@@ -13,6 +13,13 @@ export type CartItem = {
   unit: string;
   imageKey: string;
   qty: number;
+  /** "street" items follow Local Bites rules: min 2 plates, no packaging, flat ₹10 delivery. */
+  kind?: "grocery" | "street";
+  /** Minimum plates/packs per order (street food = 2). */
+  minQty?: number;
+  /** Set when the user picked one specific stall (extra ₹10). */
+  stallId?: string | null;
+  stallName?: string | null;
 };
 
 export type Lang = "en" | "hi";
@@ -47,11 +54,15 @@ type Ctx = {
     savings: number;
     packaging: number;
     delivery: number;
+    stallCharge: number;
+    streetTotal: number;
     deliverySaved: number;
     grand: number;
   };
   cartOpen: boolean;
   setCartOpen: (v: boolean) => void;
+  assistantOn: boolean;
+  setAssistantOn: (v: boolean) => void;
   session: Session | null;
   user: User | null;
   profile: Profile | null;
@@ -65,6 +76,7 @@ const AppCtx = createContext<Ctx | null>(null);
 const CART_KEY = "banda.cart.v1";
 const LANG_KEY = "banda.lang";
 const AREA_KEY = "banda.area";
+const AI_KEY = "banda.ai.on";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -72,6 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [area, setAreaState] = useState<string>(AREAS[0]);
   const [express, setExpress] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [assistantOn, setAssistantOnState] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -85,6 +98,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (l === "hi" || l === "en") setLangState(l);
       const a = localStorage.getItem(AREA_KEY);
       if (a) setAreaState(a);
+      const ai = localStorage.getItem(AI_KEY);
+      if (ai === "0") setAssistantOnState(false);
     } catch {
       /* ignore */
     }
@@ -144,17 +159,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setAssistantOn = useCallback((v: boolean) => {
+    setAssistantOnState(v);
+    try {
+      localStorage.setItem(AI_KEY, v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const add = useCallback((item: Omit<CartItem, "qty">) => {
+    const min = Math.max(1, item.minQty ?? 1);
     setItems((prev) => {
       const found = prev.find((i) => i.id === item.id);
       if (found) return prev.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i));
-      return [...prev, { ...item, qty: 1 }];
+      return [...prev, { ...item, qty: min }];
     });
   }, []);
 
   const dec = useCallback((id: string) => {
     setItems((prev) =>
-      prev.flatMap((i) => (i.id === id ? (i.qty > 1 ? [{ ...i, qty: i.qty - 1 }] : []) : [i])),
+      prev.flatMap((i) => {
+        if (i.id !== id) return [i];
+        const min = Math.max(1, i.minQty ?? 1);
+        return i.qty - 1 >= min ? [{ ...i, qty: i.qty - 1 }] : [];
+      }),
     );
   }, []);
 
@@ -165,21 +194,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const count = items.reduce((s, i) => s + i.qty, 0);
     const itemTotal = items.reduce((s, i) => s + i.price * i.qty, 0);
     const savings = items.reduce((s, i) => s + Math.max(0, (i.mrp ?? i.price) - i.price) * i.qty, 0);
+    const streetTotal = items
+      .filter((i) => i.kind === "street")
+      .reduce((s, i) => s + i.price * i.qty, 0);
+    const groceryTotal = itemTotal - streetTotal;
+
     let delivery = 0;
     let deliverySaved = 0;
-    if (itemTotal === 0) {
-      delivery = 0;
-    } else if (express) {
-      delivery = FEES.expressFee;
-    } else if (itemTotal >= FEES.freeDeliveryAbove) {
-      delivery = 0;
-      deliverySaved = FEES.standardFee;
-    } else if (itemTotal < FEES.smallOrderBelow) {
-      delivery = FEES.smallOrderFee;
-    } else {
-      delivery = FEES.standardFee;
+    if (groceryTotal > 0) {
+      if (express) {
+        delivery = FEES.expressFee;
+      } else if (groceryTotal >= FEES.freeDeliveryAbove) {
+        delivery = 0;
+        deliverySaved = FEES.standardFee;
+      } else if (groceryTotal < FEES.smallOrderBelow) {
+        delivery = FEES.smallOrderFee;
+      } else {
+        delivery = FEES.standardFee;
+      }
     }
-    const packaging = itemTotal > 0 ? FEES.packaging : 0;
+    if (streetTotal > 0) delivery += FEES.streetDelivery;
+
+    // Street food has zero packaging fee; packaging applies to grocery only.
+    const packaging = groceryTotal > 0 ? FEES.packaging : 0;
+    const stallCharge = items.some((i) => i.stallId) ? FEES.stallPickupExtra : 0;
+
     return {
       count,
       itemTotal,
@@ -187,7 +226,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       packaging,
       delivery,
       deliverySaved,
-      grand: itemTotal + packaging + delivery,
+      stallCharge,
+      streetTotal,
+      grand: itemTotal + packaging + delivery + stallCharge,
     };
   }, [items, express]);
 
@@ -220,6 +261,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totals,
     cartOpen,
     setCartOpen,
+    assistantOn,
+    setAssistantOn,
     session,
     user: session?.user ?? null,
     profile,
