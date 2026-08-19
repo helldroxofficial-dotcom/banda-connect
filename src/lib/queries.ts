@@ -107,6 +107,22 @@ export const demandPostsQuery = () =>
     },
   });
 
+export const myDemandPostsQuery = (userId: string | undefined) =>
+  queryOptions({
+    queryKey: ["my-demand-posts", userId ?? "anon"],
+    queryFn: async (): Promise<DemandPost[]> => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("demand_posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: Boolean(userId),
+  });
+
 export const atmRequestsQuery = (enabled: boolean) =>
   queryOptions({
     queryKey: ["atm-requests"],

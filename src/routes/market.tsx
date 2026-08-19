@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, MapPin, Star } from "lucide-react";
+import { ArrowLeft, Bike, MapPin, Star } from "lucide-react";
 import { categoriesQuery, productsQuery } from "@/lib/queries";
 import { ProductCard } from "@/components/app/product-card";
 import { useApp, rupees } from "@/lib/app-store";
-import { shops, stalls } from "@/lib/local-data";
+import { FEES, shops, stalls, stallMenus, streetItems } from "@/lib/local-data";
 import { img } from "@/lib/images";
 import { QtyButton } from "@/components/app/qty-button";
 
@@ -42,6 +42,8 @@ function Market() {
   const { data: categories = [] } = useQuery(categoriesQuery());
   const { data: products = [], isLoading } = useQuery(productsQuery());
   const [cat, setCat] = useState<string>("all");
+  const [bites, setBites] = useState<"items" | "stalls">("items");
+  const [stallId, setStallId] = useState<string | null>(null);
 
   const list = cat === "all" ? products : products.filter((p) => p.category_slug === cat);
 
@@ -95,44 +97,178 @@ function Market() {
 
       {tab === "bites" && (
         <div className="animate-tab-in space-y-3">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-card p-1 shadow-card">
+            {([
+              { id: "items", label: t("Quick Bites", "क्विक बाइट्स"), sub: t("Rider picks from any stall", "राइडर रास्ते की किसी भी स्टॉल से लाएगा") },
+              { id: "stalls", label: t("Famous Stalls", "मशहूर स्टॉल"), sub: t("Choose one exact stall", "एक खास स्टॉल चुनें") },
+            ] as const).map((x) => (
+              <button
+                key={x.id}
+                type="button"
+                onClick={() => {
+                  setBites(x.id);
+                  setStallId(null);
+                }}
+                className={`press rounded-xl px-3 py-2 text-left transition-colors ${
+                  bites === x.id ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
+              >
+                <span className="block text-sm font-bold">{x.label}</span>
+                <span className="block text-[10px] leading-tight opacity-80">{x.sub}</span>
+              </button>
+            ))}
+          </div>
+
           <p className="rounded-2xl bg-amber-soft p-3 text-xs font-semibold text-amber-foreground">
             🛵 {t(
-              "Stall Pickup: our rider pays at the stall and brings it hot to your door.",
-              "स्टॉल पिकअप: हमारा राइडर स्टॉल पर पैसे देकर गरमा-गरम आपके घर लाता है।",
+              `Minimum 2 plates per item · flat ₹${FEES.streetDelivery} delivery · no packaging fee. Specific stall = +₹${FEES.stallPickupExtra}.`,
+              `हर आइटम की कम से कम 2 प्लेट · फ्लैट ₹${FEES.streetDelivery} डिलीवरी · पैकेजिंग फीस नहीं। खास स्टॉल = +₹${FEES.stallPickupExtra}।`,
             )}
           </p>
-          {stalls.map((s) => (
-            <div key={s.id} className="flex gap-3 rounded-2xl bg-card p-3 shadow-card">
-              <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="h-24 w-24 rounded-xl object-cover" />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-sm font-bold leading-tight">{s.name}</p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">{s.vendor}</p>
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {s.location}
-                </p>
-                <p className="mt-1 flex items-center gap-2 text-xs font-semibold">
-                  <span className="flex items-center gap-0.5 text-primary">
-                    <Star className="h-3 w-3 fill-current" /> {s.rating}
-                  </span>
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Bike className="h-3 w-3" /> {s.eta}
-                  </span>
-                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] uppercase">
-                    {s.model === "pickup" ? t("Stall pickup", "स्टॉल पिकअप") : t("Partner", "पार्टनर")}
-                  </span>
-                </p>
-                <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-                  <span className="text-sm font-bold">{rupees(s.price)}</span>
-                  <div className="w-28">
-                    <QtyButton
-                      size="sm"
-                      item={{ id: s.id, name: s.name, price: s.price, mrp: null, unit: "1 plate", imageKey: s.imageKey }}
-                    />
+
+          {bites === "items" && (
+            <div className="animate-tab-in grid gap-3 sm:grid-cols-2">
+              {streetItems.map((it) => (
+                <div key={it.id} className="hover-lift flex gap-3 rounded-2xl bg-card p-3 shadow-card">
+                  <div className="overflow-hidden rounded-xl">
+                    <img src={img(it.imageKey)} alt={it.name} loading="lazy" className="img-zoom h-24 w-24 object-cover" />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-sm font-bold leading-tight">{lang === "hi" ? it.hindi : it.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{lang === "hi" ? it.unitHindi : it.unit}</p>
+                    <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{it.desc}</p>
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+                      <span className="text-sm font-bold">
+                        {rupees(it.price)}
+                        <span className="ml-1 text-[10px] font-semibold text-muted-foreground">
+                          · {t("min", "कम से कम")} {it.minQty}
+                        </span>
+                      </span>
+                      <div className="w-28">
+                        <QtyButton
+                          size="sm"
+                          item={{
+                            id: it.id,
+                            name: it.name,
+                            price: it.price,
+                            mrp: null,
+                            unit: it.unit,
+                            imageKey: it.imageKey,
+                            kind: "street",
+                            minQty: it.minQty,
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {bites === "stalls" && !stallId && (
+            <div className="animate-tab-in space-y-3">
+              {stalls.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setStallId(s.id)}
+                  className="press hover-lift flex w-full gap-3 rounded-2xl bg-card p-3 text-left shadow-card"
+                >
+                  <div className="overflow-hidden rounded-xl">
+                    <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-24 w-24 object-cover" />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-sm font-bold leading-tight">{s.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{s.vendor}</p>
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" /> {s.location}
+                    </p>
+                    <p className="mt-1 flex items-center gap-2 text-xs font-semibold">
+                      <span className="flex items-center gap-0.5 text-primary">
+                        <Star className="h-3 w-3 fill-current" /> {s.rating}
+                      </span>
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Bike className="h-3 w-3" /> {s.eta}
+                      </span>
+                    </p>
+                    <span className="mt-auto pt-2 text-xs font-bold text-primary">
+                      {t("View menu", "मेन्यू देखें")} →
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {bites === "stalls" && stallId && (() => {
+            const stall = stalls.find((x) => x.id === stallId);
+            if (!stall) return null;
+            const menu = stallMenus[stall.id] ?? [];
+            return (
+              <div className="animate-tab-in space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setStallId(null)}
+                  className="press flex items-center gap-1 text-sm font-bold text-primary"
+                >
+                  <ArrowLeft className="h-4 w-4" /> {t("All stalls", "सभी स्टॉल")}
+                </button>
+                <div className="overflow-hidden rounded-2xl bg-card shadow-card">
+                  <img src={img(stall.imageKey)} alt={stall.name} className="h-36 w-full object-cover" />
+                  <div className="p-3">
+                    <p className="text-base font-black">{stall.name}</p>
+                    <p className="text-xs text-muted-foreground">{stall.vendor} · {stall.location}</p>
+                    <p className="mt-1 text-xs font-semibold text-primary">⭐ {stall.rating} · {stall.eta}</p>
+                    <p className="mt-2 rounded-xl bg-amber-soft p-2 text-[11px] font-semibold text-amber-foreground">
+                      +{rupees(FEES.stallPickupExtra)} {t(
+                        "extra because the rider goes to this exact stall.",
+                        "अतिरिक्त, क्योंकि राइडर इसी स्टॉल पर जाएगा।",
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {menu.map((m) => {
+                    const it = streetItems.find((x) => x.id === m.itemId);
+                    if (!it) return null;
+                    const price = m.price ?? it.price;
+                    return (
+                      <div key={m.itemId} className="hover-lift flex gap-3 rounded-2xl bg-card p-3 shadow-card">
+                        <div className="overflow-hidden rounded-xl">
+                          <img src={img(it.imageKey)} alt={it.name} loading="lazy" className="img-zoom h-20 w-20 object-cover" />
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <p className="text-sm font-bold leading-tight">{lang === "hi" ? it.hindi : it.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{lang === "hi" ? it.unitHindi : it.unit}</p>
+                          <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+                            <span className="text-sm font-bold">{rupees(price)}</span>
+                            <div className="w-28">
+                              <QtyButton
+                                size="sm"
+                                item={{
+                                  id: `${stall.id}:${it.id}`,
+                                  name: `${it.name} — ${stall.vendor}`,
+                                  price,
+                                  mrp: null,
+                                  unit: it.unit,
+                                  imageKey: it.imageKey,
+                                  kind: "street",
+                                  minQty: it.minQty,
+                                  stallId: stall.id,
+                                  stallName: stall.vendor,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

@@ -16,6 +16,107 @@ export const FEES = {
   expressFee: 25,
   inspection: 39,
   atmFee: 20,
+  /** Flat delivery for street-food (Local Bites) orders. No packaging fee. */
+  streetDelivery: 10,
+  /** Extra charge when the user insists on one specific stall. */
+  stallPickupExtra: 10,
+};
+
+/** Street food sold as plates/packs — minimum 2 plates per order. */
+/** Demand-board categories map 1:1 to the Services tabs so a posted need shows up there. */
+export const demandCategories = [
+  { id: "workers", label: "Worker / Mistri", hindi: "मिस्त्री" },
+  { id: "skills", label: "Skill / Freelancer", hindi: "स्किल" },
+  { id: "health", label: "Health / Doctor", hindi: "स्वास्थ्य" },
+  { id: "rooms", label: "Room / Rent", hindi: "कमरा" },
+  { id: "tutors", label: "Tutor", hindi: "ट्यूटर" },
+  { id: "product", label: "Product / Saman", hindi: "सामान" },
+] as const;
+
+export type StreetItem = {
+  id: string;
+  name: string;
+  hindi: string;
+  price: number;
+  unit: string;
+  unitHindi: string;
+  minQty: number;
+  imageKey: string;
+  desc: string;
+};
+
+export const streetItems: StreetItem[] = [
+  {
+    id: "sf-golgappe",
+    name: "Pani Puri (Golgappe)",
+    hindi: "पानी पूरी / गोलगप्पे",
+    price: 15,
+    unit: "1 plate · 4 pcs",
+    unitHindi: "1 प्लेट · 4 पीस",
+    minQty: 2,
+    imageKey: "street-golgappe",
+    desc: "Teekha pudina paani, crispy puri — ₹15 ki 1 plate (4 pcs), ₹30 ki 2 plate.",
+  },
+  {
+    id: "sf-samosa",
+    name: "Samosa (pack of 2)",
+    hindi: "समोसा (2 का पैक)",
+    price: 25,
+    unit: "pack of 2",
+    unitHindi: "2 का पैक",
+    minQty: 2,
+    imageKey: "street-samosa",
+    desc: "Samose sirf 2 ke pack me. 2 pack = 4 samose = ₹50.",
+  },
+  {
+    id: "sf-tikki",
+    name: "Aloo Tikki Chaat",
+    hindi: "आलू टिक्की चाट",
+    price: 40,
+    unit: "1 plate",
+    unitHindi: "1 प्लेट",
+    minQty: 2,
+    imageKey: "street-tikki",
+    desc: "Crispy tikki, dahi, imli chutney aur masala.",
+  },
+  {
+    id: "sf-momos",
+    name: "Veg Momos",
+    hindi: "वेज मोमोज",
+    price: 50,
+    unit: "1 plate · 6 pcs",
+    unitHindi: "1 प्लेट · 6 पीस",
+    minQty: 2,
+    imageKey: "street-momos",
+    desc: "Steamed momos with teekhi lal chutney.",
+  },
+  {
+    id: "sf-kachori",
+    name: "Kachori (pack of 2)",
+    hindi: "कचौड़ी (2 का पैक)",
+    price: 20,
+    unit: "pack of 2",
+    unitHindi: "2 का पैक",
+    minQty: 2,
+    imageKey: "street-samosa",
+    desc: "Garam kachori with aloo sabzi.",
+  },
+];
+
+/** Which items each stall actually sells (price override optional). */
+export const stallMenus: Record<string, { itemId: string; price?: number }[]> = {
+  f1: [
+    { itemId: "sf-tikki" },
+    { itemId: "sf-golgappe" },
+    { itemId: "sf-samosa", price: 28 },
+  ],
+  f2: [
+    { itemId: "sf-samosa" },
+    { itemId: "sf-kachori" },
+    { itemId: "sf-tikki", price: 45 },
+  ],
+  f3: [{ itemId: "sf-momos" }, { itemId: "sf-tikki", price: 45 }],
+  f4: [{ itemId: "sf-golgappe" }, { itemId: "sf-samosa", price: 26 }],
 };
 
 export type Stall = {

@@ -44,7 +44,8 @@ export function CartSheet() {
     profile,
     user,
   } = useApp();
-  const [payment, setPayment] = useState("cod");
+  const [payment, setPayment] = useState<"cod" | "upi" | "wallet">("cod");
+  const [upiId, setUpiId] = useState("");
   const [placing, setPlacing] = useState(false);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -56,6 +57,10 @@ export function CartSheet() {
       setCartOpen(false);
       toast.error(t("Please sign in to place an order", "ऑर्डर करने के लिए साइन इन करें"));
       void navigate({ to: "/auth" });
+      return;
+    }
+    if (payment === "upi" && !/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim())) {
+      toast.error(t("Enter a valid UPI ID (e.g. name@okicici)", "सही UPI ID डालें (जैसे name@okicici)"));
       return;
     }
     setPlacing(true);
@@ -70,6 +75,8 @@ export function CartSheet() {
           price: i.price,
           unit: i.unit,
           image_key: i.imageKey,
+          kind: i.kind ?? "grocery",
+          stall_name: i.stallName ?? null,
         })),
         item_total: totals.itemTotal,
         packaging_fee: totals.packaging,
@@ -135,6 +142,15 @@ export function CartSheet() {
               ))}
             </div>
 
+            {totals.streetTotal > 0 && (
+              <p className="rounded-2xl bg-amber-soft p-3 text-xs font-semibold text-amber-foreground">
+                🛵 {t(
+                  "Street food: flat ₹10 delivery, no packaging fee, minimum 2 plates per item.",
+                  "स्ट्रीट फूड: फ्लैट ₹10 डिलीवरी, पैकेजिंग फीस नहीं, हर आइटम की कम से कम 2 प्लेट।",
+                )}
+              </p>
+            )}
+
             <button
               type="button"
               onClick={() => setExpress(!express)}
@@ -152,7 +168,14 @@ export function CartSheet() {
             <div className="rounded-2xl bg-card p-4 text-sm shadow-card">
               <p className="mb-2 font-bold">{t("Bill details", "बिल विवरण")}</p>
               <Row label={t("Item total", "आइटम कुल")} value={rupees(totals.itemTotal)} />
-              <Row label={t("Packaging", "पैकेजिंग")} value={rupees(totals.packaging)} />
+              <Row
+                label={t("Packaging", "पैकेजिंग")}
+                value={totals.packaging === 0 ? t("FREE", "फ्री") : rupees(totals.packaging)}
+                highlight={totals.packaging === 0}
+              />
+              {totals.stallCharge > 0 && (
+                <Row label={t("Specific stall pickup", "स्पेशल स्टॉल पिकअप")} value={rupees(totals.stallCharge)} />
+              )}
               <Row
                 label={t("Delivery", "डिलीवरी")}
                 value={totals.delivery === 0 ? t("FREE", "फ्री") : rupees(totals.delivery)}
@@ -177,23 +200,34 @@ export function CartSheet() {
             <div className="rounded-2xl bg-card p-4 shadow-card">
               <p className="mb-2 text-sm font-bold">{t("Payment method", "भुगतान")}</p>
               <div className="grid grid-cols-3 gap-2">
-                {[
+                {([
                   { id: "cod", label: t("Cash", "कैश") },
                   { id: "upi", label: "UPI" },
                   { id: "wallet", label: t("Wallet", "वॉलेट") },
-                ].map((p) => (
+                ] as const).map((p) => (
                   <button
                     key={p.id}
                     type="button"
+                    aria-pressed={payment === p.id}
                     onClick={() => setPayment(p.id)}
-                    className={`press rounded-xl border p-2 text-xs font-semibold ${
-                      payment === p.id ? "border-primary bg-primary-soft text-accent-foreground" : "border-border"
+                    className={`press rounded-xl border p-2 text-xs font-semibold transition-colors ${
+                      payment === p.id
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground"
                     }`}
                   >
                     {p.label}
                   </button>
                 ))}
               </div>
+              {payment === "upi" && (
+                <input
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
+                  placeholder={t("Your UPI ID e.g. 98xxxxxx@ybl", "आपकी UPI ID जैसे 98xxxxxx@ybl")}
+                  className="animate-fade-in mt-2 h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
+                />
+              )}
             </div>
           </div>
         )}
