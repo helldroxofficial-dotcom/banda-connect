@@ -23,6 +23,16 @@ export const FEES = {
 };
 
 /** Street food sold as plates/packs — minimum 2 plates per order. */
+/** Demand-board categories map 1:1 to the Services tabs so a posted need shows up there. */
+export const demandCategories = [
+  { id: "workers", label: "Worker / Mistri", hindi: "मिस्त्री" },
+  { id: "skills", label: "Skill / Freelancer", hindi: "स्किल" },
+  { id: "health", label: "Health / Doctor", hindi: "स्वास्थ्य" },
+  { id: "rooms", label: "Room / Rent", hindi: "कमरा" },
+  { id: "tutors", label: "Tutor", hindi: "ट्यूटर" },
+  { id: "product", label: "Product / Saman", hindi: "सामान" },
+] as const;
+
 export type StreetItem = {
   id: string;
   name: string;
