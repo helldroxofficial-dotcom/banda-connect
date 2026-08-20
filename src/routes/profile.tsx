@@ -54,8 +54,32 @@ function ProfilePage() {
     );
   }
 
+  const phoneOk = (p: string) => /^[6-9]\d{9}$/.test(p.replace(/[^\d]/g, "").replace(/^91(?=\d{10}$)/, ""));
+
+  const validate = () => {
+    if (form.full_name.trim().length < 3) {
+      toast.error(t("Please enter your real full name", "कृपया अपना असली पूरा नाम लिखें"));
+      return false;
+    }
+    if (!phoneOk(form.phone)) {
+      toast.error(t("Enter a valid 10-digit mobile number starting with 6-9", "6-9 से शुरू होने वाला सही 10 अंकों का मोबाइल नंबर डालें"));
+      return false;
+    }
+    const digits = form.phone.replace(/[^\d]/g, "").slice(-10);
+    if (/^(\d)\1{9}$/.test(digits) || digits === "1234567890" || digits === "9876543210") {
+      toast.error(t("This number looks fake. Please enter your real number.", "यह नंबर नकली लग रहा है। कृपया असली नंबर डालें।"));
+      return false;
+    }
+    if (form.address.trim().length < 10) {
+      toast.error(t("Address must include house no., street and landmark", "पते में मकान नं., गली और लैंडमार्क होना चाहिए"));
+      return false;
+    }
+    return true;
+  };
+
   const save = async () => {
     if (!user) return;
+    if (!validate()) return;
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
@@ -72,6 +96,7 @@ function ProfilePage() {
 
   const requestCash = async () => {
     if (!user) return;
+    if (!validate()) return;
     if (amount < 500 || amount > 5000) {
       toast.error(t("Amount must be between ₹500 and ₹5,000", "राशि ₹500 से ₹5,000 के बीच होनी चाहिए"));
       return;

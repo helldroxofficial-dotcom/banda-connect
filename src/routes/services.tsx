@@ -219,8 +219,18 @@ function Services() {
         </div>
       )}
 
-      {tab === "rooms" && <ListingGrid items={rentListings} />}
-      {tab === "tutors" && <ListingGrid items={tutorListings} />}
+      {tab === "rooms" && (
+        <div className="space-y-3">
+          <DemandStrip category="rooms" />
+          <ListingGrid items={rentListings} />
+        </div>
+      )}
+      {tab === "tutors" && (
+        <div className="space-y-3">
+          <DemandStrip category="tutors" />
+          <ListingGrid items={tutorListings} />
+        </div>
+      )}
       {tab === "demand" && <DemandBoard />}
     </div>
   );

@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, PackageCheck, Star } from "lucide-react";
+import { Banknote, Bike, Megaphone, PackageCheck, Star } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, rupees } from "@/lib/app-store";
-import { myOrdersQuery } from "@/lib/queries";
+import { myOrdersQuery, atmRequestsQuery, myDemandPostsQuery } from "@/lib/queries";
 import { img } from "@/lib/images";
 
 const STEPS = ["placed", "packed", "on_the_way", "delivered"];
@@ -30,6 +30,8 @@ function Orders() {
   const { t, user, authReady } = useApp();
   const { order: highlight } = Route.useSearch();
   const { data: orders = [], isLoading, refetch } = useQuery(myOrdersQuery(user?.id));
+  const { data: atm = [] } = useQuery(atmRequestsQuery(Boolean(user)));
+  const { data: needs = [] } = useQuery(myDemandPostsQuery(user?.id));
 
   if (authReady && !user) {
     return (
@@ -54,6 +56,54 @@ function Orders() {
   return (
     <div className="space-y-3">
       <h1 className="text-lg font-black">{t("My orders", "मेरे ऑर्डर")}</h1>
+
+      {atm.length > 0 && (
+        <div className="animate-rise rounded-2xl bg-card p-4 shadow-card">
+          <p className="flex items-center gap-2 text-sm font-bold">
+            <Banknote className="h-4 w-4 text-primary" /> Mini-ATM · {t("cash requests", "कैश रिक्वेस्ट")}
+          </p>
+          <div className="mt-2 space-y-2">
+            {atm.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-xl bg-muted px-3 py-2 text-xs">
+                <div>
+                  <p className="font-bold">{rupees(Number(r.amount))} + {rupees(Number(r.fee))} {t("fee", "फीस")}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(r.created_at).toLocaleString("en-IN")}
+                  </p>
+                </div>
+                <span className="rounded-md bg-primary-soft px-2 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
+                  {r.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {needs.length > 0 && (
+        <div className="animate-rise rounded-2xl bg-card p-4 shadow-card">
+          <p className="flex items-center gap-2 text-sm font-bold">
+            <Megaphone className="h-4 w-4 text-primary" /> {t("My posted needs", "मेरी पोस्ट की गई ज़रूरतें")}
+          </p>
+          <div className="mt-2 space-y-2">
+            {needs.map((n) => (
+              <div key={n.id} className="rounded-xl bg-muted px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="min-w-0 truncate text-xs font-bold">{n.title}</p>
+                  <span className="shrink-0 rounded-md bg-amber-soft px-1.5 py-0.5 text-[10px] font-bold text-amber-foreground">
+                    {n.category}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {n.location ?? "Banda"} {n.budget ? `· ${n.budget}` : ""} ·{" "}
+                  {new Date(n.created_at).toLocaleDateString("en-IN")} · {n.status}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isLoading && <p className="text-sm text-muted-foreground">{t("Loading…", "लोड हो रहा है…")}</p>}
       {!isLoading && orders.length === 0 && (
         <div className="rounded-2xl bg-card p-6 text-center text-sm text-muted-foreground shadow-card">
