@@ -13,17 +13,20 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
-      <div className="mx-auto grid max-w-3xl grid-cols-5">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl">
+      <div className="mx-auto grid max-w-3xl grid-cols-5 px-1">
         {tabs.map(({ to, icon: Icon, label, exact }) => (
           <Link
             key={to}
             to={to}
             activeOptions={{ exact }}
-            className="press flex flex-col items-center gap-0.5 py-2 text-[11px] text-muted-foreground data-[status=active]:text-primary"
+            className="press group relative flex flex-col items-center gap-1 pb-2 pt-2.5 text-[10.5px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
           >
-            <Icon className="h-5 w-5" />
-            <span className="font-medium">{label}</span>
+            <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-primary opacity-0 transition-opacity group-data-[status=active]:opacity-100" />
+            <span className="grid h-8 w-12 place-items-center rounded-full transition-colors group-data-[status=active]:bg-primary-soft">
+              <Icon className="h-[18px] w-[18px]" strokeWidth={2.2} />
+            </span>
+            <span className="tracking-tight">{label}</span>
           </Link>
         ))}
       </div>
