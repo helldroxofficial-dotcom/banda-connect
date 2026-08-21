@@ -5,14 +5,14 @@ export function QtyButton({ item, size = "md" }: { item: Omit<CartItem, "qty">; 
   const { qtyOf, add, dec, t } = useApp();
   const qty = qtyOf(item.id);
   const min = Math.max(1, item.minQty ?? 1);
-  const pad = size === "sm" ? "h-8 text-xs" : "h-9 text-sm";
+  const pad = size === "sm" ? "h-8 text-[11px]" : "h-9 text-sm";
 
   if (qty === 0) {
     return (
       <button
         type="button"
         onClick={() => add(item)}
-        className={`press ${pad} w-full rounded-lg border border-primary bg-primary-soft px-2 font-bold uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-primary-foreground`}
+        className={`press ${pad} w-full rounded-xl border border-primary/40 bg-primary-soft px-2 font-extrabold uppercase tracking-wider text-primary shadow-soft transition-colors hover:bg-primary hover:text-primary-foreground`}
       >
         {min > 1 ? `${t("Add", "जोड़ें")} ${min}` : t("Add", "जोड़ें")}
       </button>
@@ -20,7 +20,8 @@ export function QtyButton({ item, size = "md" }: { item: Omit<CartItem, "qty">; 
   }
 
   return (
-    <div className={`${pad} flex w-full items-center justify-between rounded-lg bg-primary px-1 text-primary-foreground shadow-[var(--shadow-float)]`}>
+    <div className={`${pad} flex w-full items-center justify-between rounded-xl bg-primary px-1 font-extrabold text-primary-foreground shadow-[var(--shadow-float)]`}>
+
       <button type="button" aria-label="decrease" onClick={() => dec(item.id)} className="press grid h-full w-8 place-items-center">
         <Minus className="h-4 w-4" />
       </button>
