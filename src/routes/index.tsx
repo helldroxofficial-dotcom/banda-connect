@@ -56,20 +56,22 @@ function Home() {
   ] as const;
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
-        <p className="text-xs font-semibold uppercase tracking-widest opacity-80">
+    <div className="space-y-7">
+      <section className="gradient-hero animate-rise relative overflow-hidden rounded-3xl p-5 text-primary-foreground shadow-[var(--shadow-lift)]">
+        <span className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-primary-foreground/10" />
+        <span className="pointer-events-none absolute -bottom-16 -left-8 h-36 w-36 rounded-full bg-amber/20" />
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] opacity-80">
           {t("Banda ka apna app", "बांदा का अपना ऐप")}
         </p>
-        <h1 className="mt-1 text-2xl font-black leading-tight">
+        <h1 className="mt-2 text-[28px] font-extrabold leading-[1.1]">
           {t("Everything in Banda,", "बांदा में सब कुछ,")}
           <br />
-          {t("delivered in minutes", "मिनटों में आपके घर")}
+          <span className="text-amber">{t("delivered in minutes", "मिनटों में आपके घर")}</span>
         </h1>
-        <p className="mt-2 text-sm opacity-90">
+        <p className="mt-2 text-[13px] font-medium opacity-90">
           {t("Now serving", "अभी सेवा में")} {area}, Banda · {t("MRP se kam, hamesha", "MRP से कम, हमेशा")}
         </p>
-        <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold">
+        <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold">
           <Chip icon={Timer} text={t("15-min express", "15 मिनट एक्सप्रेस")} />
           <Chip icon={ShieldCheck} text={t("7-day warranty", "7 दिन वारंटी")} />
           <Chip icon={BadgeCheck} text={t("No overcharging", "कोई ओवरचार्ज नहीं")} />
@@ -77,38 +79,42 @@ function Home() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
-          {t("What do you need?", "आपको क्या चाहिए?")}
-        </h2>
-        <div className="grid grid-cols-4 gap-2">
-          {actions.map(({ to, search, icon: Icon, label, sub }) => (
+        <h2 className="section-title mb-3">{t("What do you need?", "आपको क्या चाहिए?")}</h2>
+        <div className="grid grid-cols-4 gap-2.5">
+          {actions.map(({ to, search, icon: Icon, label, sub }, i) => (
             <Link
               key={label}
               to={to}
               search={search}
-              className="press flex flex-col items-center gap-1 rounded-2xl bg-card p-3 text-center shadow-card"
+              className={`press hover-lift flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center shadow-card ${
+                i % 4 === 3 ? "tile-grad-amber" : "tile-grad"
+              }`}
             >
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-accent-foreground">
-                <Icon className="h-5 w-5" />
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-card text-primary shadow-soft">
+                <Icon className="h-[22px] w-[22px]" strokeWidth={2.1} />
               </span>
-              <span className="text-[11px] font-bold leading-tight">{label}</span>
-              <span className="text-[10px] text-muted-foreground">{sub}</span>
+              <span className="text-[11px] font-extrabold leading-tight tracking-tight">{label}</span>
+              <span className="text-[9.5px] font-medium text-muted-foreground">{sub}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="rounded-2xl bg-amber-soft p-4">
-        <p className="flex items-center gap-2 text-sm font-bold text-amber-foreground">
-          <Bot className="h-4 w-4" /> {t("Ask Banda Mitra AI", "बांदा मित्र AI से पूछें")}
-        </p>
-        <p className="mt-1 text-xs text-amber-foreground/80">
-          {t(
-            "\"Ghar par mistri chahiye\", \"raat ko doodh milega?\" — bas poochh lijiye.",
-            "\"घर पर मिस्त्री चाहिए\", \"रात को दूध मिलेगा?\" — बस पूछ लीजिए।",
-          )}
-        </p>
+      <section className="tile-grad-amber flex items-center gap-3 rounded-2xl p-4 shadow-card">
+        <span className="grid h-11 w-11 shrink-0 animate-float place-items-center rounded-2xl bg-amber text-amber-foreground shadow-soft">
+          <Bot className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-extrabold tracking-tight">{t("Ask Banda Mitra AI", "बांदा मित्र AI से पूछें")}</p>
+          <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
+            {t(
+              "\"Ghar par mistri chahiye\", \"raat ko doodh milega?\" — bas poochh lijiye.",
+              "\"घर पर मिस्त्री चाहिए\", \"रात को दूध मिलेगा?\" — बस पूछ लीजिए।",
+            )}
+          </p>
+        </div>
       </section>
+
 
       <section>
         <div className="mb-3 flex items-center justify-between">
