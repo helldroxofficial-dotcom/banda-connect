@@ -51,19 +51,23 @@ export function AppHeader() {
   const productById = (id: string) => products.find((p) => p.id === id);
 
   return (
-    <header className="bg-primary text-primary-foreground">
+    <header className="gradient-hero sticky top-0 z-50 text-primary-foreground shadow-[0_8px_24px_-16px_oklch(0.2_0.02_250/0.5)]">
       <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 pt-3">
         <button
           type="button"
           onClick={() => setAreaOpen(true)}
           className="press grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 text-left"
         >
-          <MapPin className="h-5 w-5 shrink-0" />
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-foreground/15">
+            <MapPin className="h-4.5 w-4.5" />
+          </span>
           <span className="min-w-0">
-            <span className="block text-[11px] opacity-80">{t("Delivering to", "डिलीवरी")}</span>
-            <span className="flex items-center gap-1 text-sm font-bold">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] opacity-75">
+              {t("Delivery in 15 min", "डिलीवरी 15 मिनट")}
+            </span>
+            <span className="flex items-center gap-1 text-[15px] font-extrabold tracking-tight">
               <span className="truncate">{area}, Banda</span>
-              <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-80" />
             </span>
           </span>
         </button>
@@ -71,7 +75,7 @@ export function AppHeader() {
         <button
           type="button"
           onClick={() => setLang(lang === "en" ? "hi" : "en")}
-          className="press shrink-0 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-bold"
+          className="press shrink-0 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-[11px] font-extrabold tracking-wide"
         >
           {lang === "en" ? "ENG" : "हिंदी"}
         </button>
@@ -82,7 +86,7 @@ export function AppHeader() {
           className="press relative shrink-0 rounded-full bg-primary-foreground/15 p-2"
         >
           <Bell className="h-4 w-4" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber" />
+          <span className="animate-pulse-ring absolute right-1 top-1 h-2 w-2 rounded-full bg-amber" />
         </button>
         <button
           type="button"
@@ -102,9 +106,9 @@ export function AppHeader() {
         </button>
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 pb-3 pt-2">
+      <div className="mx-auto max-w-3xl px-4 pb-3 pt-2.5">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -112,7 +116,7 @@ export function AppHeader() {
               'Search "atta", "samosa", "electrician"',
               'खोजें "आटा", "समोसा", "इलेक्ट्रीशियन"',
             )}
-            className="h-11 w-full rounded-xl bg-card pl-9 pr-9 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            className="h-12 w-full rounded-2xl bg-card pl-10 pr-9 text-sm font-medium text-foreground shadow-[var(--shadow-card)] outline-none ring-0 placeholder:text-muted-foreground focus:ring-2 focus:ring-amber/60"
           />
           {q && (
             <button
@@ -125,6 +129,7 @@ export function AppHeader() {
             </button>
           )}
         </div>
+
 
         {hits.length > 0 && (
           <div className="animate-fade-in mt-2 overflow-hidden rounded-xl bg-card text-foreground shadow-card">
