@@ -55,20 +55,23 @@ function Market() {
 
   return (
     <div className="space-y-4">
-      <div className="no-scrollbar flex gap-2 overflow-x-auto">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-0.5">
         {tabs.map((x) => (
           <button
             key={x.id}
             type="button"
             onClick={() => void navigate({ to: "/market", search: { tab: x.id } })}
-            className={`press shrink-0 rounded-full px-4 py-2 text-sm font-bold ${
-              tab === x.id ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground shadow-card"
+            className={`press shrink-0 rounded-full px-4 py-2 text-[13px] font-extrabold tracking-tight transition-all ${
+              tab === x.id
+                ? "bg-primary text-primary-foreground shadow-[var(--shadow-float)]"
+                : "bg-card text-muted-foreground shadow-card"
             }`}
           >
             {x.label}
           </button>
         ))}
       </div>
+
 
       {tab === "grocery" && (
         <div className="animate-tab-in space-y-4">
