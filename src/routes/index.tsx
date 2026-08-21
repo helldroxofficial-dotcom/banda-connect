@@ -117,11 +117,9 @@ function Home() {
 
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            {t("Top picks today", "आज के टॉप पिक")}
-          </h2>
-          <Link to="/market" search={{ tab: "grocery" }} className="text-xs font-bold text-primary">
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="section-title">{t("Top picks today", "आज के टॉप पिक")}</h2>
+          <Link to="/market" search={{ tab: "grocery" }} className="text-xs font-extrabold text-primary">
             {t("See all", "सभी देखें")} →
           </Link>
         </div>
@@ -133,45 +131,50 @@ function Home() {
       </section>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            {t("Famous Banda street food", "बांदा का मशहूर स्ट्रीट फूड")}
-          </h2>
-          <Link to="/market" search={{ tab: "bites" }} className="text-xs font-bold text-primary">
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="section-title">{t("Famous Banda street food", "बांदा का मशहूर स्ट्रीट फूड")}</h2>
+          <Link to="/market" search={{ tab: "bites" }} className="text-xs font-extrabold text-primary">
             {t("See all", "सभी देखें")} →
           </Link>
         </div>
-        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4">
+        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
           {stalls.map((s) => (
-            <div key={s.id} className="w-44 shrink-0 rounded-2xl bg-card p-2 shadow-card">
-              <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="h-24 w-full rounded-xl object-cover" />
-              <p className="mt-2 line-clamp-2 text-[13px] font-semibold leading-tight">{s.name}</p>
-              <p className="text-[11px] text-muted-foreground">{s.location}</p>
-              <p className="mt-1 text-xs font-bold text-primary">₹{s.price} · ⭐ {s.rating}</p>
+            <div key={s.id} className="surface hover-lift w-44 shrink-0 overflow-hidden p-0">
+              <div className="relative overflow-hidden">
+                <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-28 w-full object-cover" />
+                <span className="absolute bottom-2 left-2 rounded-full bg-card/90 px-2 py-0.5 text-[10px] font-extrabold text-primary backdrop-blur">
+                  ⭐ {s.rating}
+                </span>
+              </div>
+              <div className="p-2.5">
+                <p className="line-clamp-1 text-[13px] font-extrabold leading-tight tracking-tight">{s.name}</p>
+                <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">{s.location}</p>
+                <p className="mt-1 text-xs font-extrabold text-primary">₹{s.price}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            {t("Trusted workers near you", "आपके पास भरोसेमंद मिस्त्री")}
-          </h2>
-          <Link to="/services" search={{ tab: "workers" }} className="text-xs font-bold text-primary">
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="section-title">{t("Trusted workers near you", "आपके पास भरोसेमंद मिस्त्री")}</h2>
+          <Link to="/services" search={{ tab: "workers" }} className="text-xs font-extrabold text-primary">
             {t("See all", "सभी देखें")} →
           </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {pros.slice(0, 2).map((p) => (
-            <div key={p.id} className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-card">
-              <img src={img(p.imageKey)} alt={p.name} loading="lazy" className="h-14 w-14 rounded-xl object-cover" />
+            <div key={p.id} className="surface hover-lift flex items-center gap-3 p-3">
+              <div className="overflow-hidden rounded-xl">
+                <img src={img(p.imageKey)} alt={p.name} loading="lazy" className="img-zoom h-14 w-14 object-cover" />
+              </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{p.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate text-sm font-extrabold tracking-tight">{p.name}</p>
+                <p className="truncate text-[11.5px] font-medium text-muted-foreground">
                   {p.location} · {p.experience}
                 </p>
-                <p className="text-xs font-semibold text-primary">
+                <p className="text-[11.5px] font-bold text-primary">
                   ⭐ {p.rating} · {p.jobs}+ {t("jobs done", "काम पूरे")}
                 </p>
               </div>
@@ -180,9 +183,11 @@ function Home() {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-card p-4 shadow-card">
-        <p className="text-sm font-bold">{t("Not finding what you need?", "जो चाहिए वो नहीं मिल रहा?")}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+      <section className="surface p-4">
+        <p className="text-[15px] font-extrabold tracking-tight">
+          {t("Not finding what you need?", "जो चाहिए वो नहीं मिल रहा?")}
+        </p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
           {t(
             "Post your demand — local shops and workers will reach out to you.",
             "अपनी ज़रूरत पोस्ट करें — लोकल दुकानदार और मिस्त्री खुद संपर्क करेंगे।",
@@ -191,13 +196,16 @@ function Home() {
         <Link
           to="/services"
           search={{ tab: "demand" }}
-          className="press mt-3 inline-flex rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+          className="press mt-3 inline-flex rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground shadow-[var(--shadow-float)]"
         >
           {t("Post your need", "अपनी ज़रूरत पोस्ट करें")}
         </Link>
       </section>
 
-      <Link to="/help" className="block rounded-2xl bg-muted p-4 text-center text-xs font-semibold text-muted-foreground">
+      <Link
+        to="/help"
+        className="block rounded-2xl border border-dashed border-border bg-muted/50 p-4 text-center text-xs font-semibold text-muted-foreground"
+      >
         {t("Delivery fees, warranty & Mini-ATM — read FAQs", "डिलीवरी फीस, वारंटी और मिनी-एटीएम — FAQ पढ़ें")} →
       </Link>
     </div>
@@ -206,9 +214,10 @@ function Home() {
 
 function Chip({ icon: Icon, text }: { icon: typeof Timer; text: string }) {
   return (
-    <span className="flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-1">
+    <span className="flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-1 backdrop-blur">
       <Icon className="h-3.5 w-3.5" />
       {text}
     </span>
   );
 }
+
