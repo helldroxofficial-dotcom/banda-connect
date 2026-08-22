@@ -124,6 +124,9 @@ export const stallMenus: Record<string, { itemId: string; price?: number }[]> = 
 export type Stall = {
   id: string;
   name: string;
+  nameHindi: string;
+  vendorHindi: string;
+  locationHindi: string;
   vendor: string;
   location: string;
   rating: number;
@@ -136,6 +139,9 @@ export type Stall = {
 export const stalls: Stall[] = [
   {
     id: "f1",
+    nameHindi: "कालू कुआं फेमस आलू टिक्की चाट",
+    vendorHindi: "पंकज चाट कॉर्नर",
+    locationHindi: "कालू कुआं, बांदा",
     name: "Kalu Kuan Famous Aloo Tikki Chaat",
     vendor: "Pankaj Chaat Corner",
     location: "Kalu Kuan, Banda",
@@ -147,6 +153,9 @@ export const stalls: Stall[] = [
   },
   {
     id: "f2",
+    nameHindi: "रेलवे स्टेशन समोसा और कचौड़ी",
+    vendorHindi: "शुक्ला समोसा भंडार",
+    locationHindi: "स्टेशन रोड, बांदा",
     name: "Railway Station Samosa & Kachori",
     vendor: "Shukla Samosa Bhandar",
     location: "Station Road, Banda",
@@ -158,6 +167,9 @@ export const stalls: Stall[] = [
   },
   {
     id: "f3",
+    nameHindi: "गुप्ता जी के स्पेशल वेज मोमोज",
+    vendorHindi: "गुप्ता जी का ठेला",
+    locationHindi: "सिविल लाइंस, बांदा",
     name: "Gupta Ji Ke Special Veg Momos",
     vendor: "Gupta Ji Ka Thela",
     location: "Civil Lines, Banda",
@@ -169,6 +181,9 @@ export const stalls: Stall[] = [
   },
   {
     id: "f4",
+    nameHindi: "चौक स्पेशल गोलगप्पे (6 पीस)",
+    vendorHindi: "भैया जी पानी पूरी",
+    locationHindi: "चौक बाज़ार, बांदा",
     name: "Chowk Special Golgappe (6 pcs)",
     vendor: "Bhaiya Ji Pani Puri",
     location: "Chowk Bazaar, Banda",
@@ -183,6 +198,9 @@ export const stalls: Stall[] = [
 export type Shop = {
   id: string;
   name: string;
+  nameHindi: string;
+  tagsHindi: string;
+  locationHindi: string;
   location: string;
   tags: string;
   imageKey: string;
@@ -193,6 +211,9 @@ export type Shop = {
 export const shops: Shop[] = [
   {
     id: "sh1",
+    nameHindi: "साहू स्वीट्स एंड बेकरी",
+    tagsHindi: "गुलाब जामुन • पेड़ा • केक",
+    locationHindi: "स्टेशन रोड, बांदा",
     name: "Sahu Sweets & Bakery",
     location: "Station Road, Banda",
     tags: "Gulab Jamun • Peda • Cakes",
@@ -202,6 +223,9 @@ export const shops: Shop[] = [
   },
   {
     id: "sh2",
+    nameHindi: "गुप्ता जनरल एंड कॉस्मेटिक्स",
+    tagsHindi: "कॉस्मेटिक्स • होम केयर • टॉयलेटरीज़",
+    locationHindi: "बाबू पुरा, बांदा",
     name: "Gupta General & Cosmetics",
     location: "Babu Pura, Banda",
     tags: "Cosmetics • Home Care • Toiletries",
@@ -211,6 +235,9 @@ export const shops: Shop[] = [
   },
   {
     id: "sh3",
+    nameHindi: "बांदा बुक डिपो",
+    tagsHindi: "स्टेशनरी • एग्ज़ाम नोट्स • किताबें",
+    locationHindi: "सिविल लाइंस, बांदा",
     name: "Banda Book Depot",
     location: "Civil Lines, Banda",
     tags: "Stationery • Exam Notes • Books",
