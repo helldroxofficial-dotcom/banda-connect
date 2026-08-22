@@ -57,8 +57,10 @@ type Ctx = {
     stallCharge: number;
     streetTotal: number;
     deliverySaved: number;
+    expressFee: number;
     grand: number;
   };
+
   cartOpen: boolean;
   setCartOpen: (v: boolean) => void;
   assistantOn: boolean;
