@@ -5,17 +5,19 @@ import { ArrowLeft, Bike, MapPin, Star } from "lucide-react";
 import { categoriesQuery, productsQuery } from "@/lib/queries";
 import { ProductCard } from "@/components/app/product-card";
 import { useApp, rupees } from "@/lib/app-store";
-import { FEES, shops, stalls, stallMenus, streetItems } from "@/lib/local-data";
+import { FEES, shopMenus, shops, stalls, stallMenus, streetItems } from "@/lib/local-data";
 import { img } from "@/lib/images";
 import { QtyButton } from "@/components/app/qty-button";
 
 type Tab = "grocery" | "bites" | "shops";
 
 export const Route = createFileRoute("/market")({
-  validateSearch: (search: Record<string, unknown>): { tab: Tab } => ({
+  validateSearch: (search: Record<string, unknown>): { tab: Tab; stall?: string; shop?: string } => ({
     tab: (["grocery", "bites", "shops"] as const).includes(search["tab"] as Tab)
       ? (search["tab"] as Tab)
       : "grocery",
+    ...(typeof search["stall"] === "string" ? { stall: search["stall"] as string } : {}),
+    ...(typeof search["shop"] === "string" ? { shop: search["shop"] as string } : {}),
   }),
   head: () => ({
     meta: [
@@ -36,14 +38,19 @@ export const Route = createFileRoute("/market")({
 });
 
 function Market() {
-  const { tab } = Route.useSearch();
+  const { tab, stall: stallParam, shop: shopParam } = Route.useSearch();
   const navigate = useNavigate();
   const { t, lang } = useApp();
   const { data: categories = [] } = useQuery(categoriesQuery());
   const { data: products = [], isLoading } = useQuery(productsQuery());
   const [cat, setCat] = useState<string>("all");
-  const [bites, setBites] = useState<"items" | "stalls">("items");
-  const [stallId, setStallId] = useState<string | null>(null);
+  const [bitesState, setBites] = useState<"items" | "stalls">("items");
+  const bites = stallParam ? "stalls" : bitesState;
+  const stallId = stallParam ?? null;
+  const setStallId = (id: string | null) =>
+    void navigate({ to: "/market", search: id ? { tab: "bites", stall: id } : { tab: "bites" } });
+  const setShopId = (id: string | null) =>
+    void navigate({ to: "/market", search: id ? { tab: "shops", shop: id } : { tab: "shops" } });
 
   const list = cat === "all" ? products : products.filter((p) => p.category_slug === cat);
 
@@ -110,7 +117,7 @@ function Market() {
                 type="button"
                 onClick={() => {
                   setBites(x.id);
-                  setStallId(null);
+                  if (stallParam) setStallId(null);
                 }}
                 className={`press rounded-xl px-3 py-2 text-left transition-colors ${
                   bites === x.id ? "bg-primary text-primary-foreground" : "text-muted-foreground"
