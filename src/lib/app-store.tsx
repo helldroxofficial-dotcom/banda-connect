@@ -229,8 +229,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deliverySaved,
       stallCharge,
       streetTotal,
-      grand: itemTotal + packaging + delivery + stallCharge,
+      expressFee,
+      grand: itemTotal + packaging + delivery + stallCharge + expressFee,
     };
+
   }, [items, express]);
 
   const t = useCallback((en: string, hi: string) => (lang === "hi" ? hi : en), [lang]);
