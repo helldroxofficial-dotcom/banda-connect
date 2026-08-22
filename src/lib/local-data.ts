@@ -14,7 +14,9 @@ export const FEES = {
   smallOrderFee: 15,
   standardFee: 25,
   expressFee: 25,
-  inspection: 39,
+  /** Visit charge: only for coming to your home. Work/parts are billed separately. */
+  visitCharge: 99,
+  inspection: 99,
   atmFee: 20,
   /** Flat delivery for street-food (Local Bites) orders. No packaging fee. */
   streetDelivery: 10,
@@ -461,3 +463,36 @@ export const faqs = [
     a: "Zero-tech stalls ke liye rider khud stall par cash/UPI pay karta hai aur 20-30 min me aapko deliver karta hai. Aap app me hi pay karte hain.",
   },
 ];
+
+
+/** Items each local shop sells — used by the shop detail page. */
+export type ShopItem = {
+  id: string;
+  name: string;
+  hindi: string;
+  price: number;
+  mrp?: number;
+  unit: string;
+  unitHindi: string;
+  imageKey: string;
+};
+
+export const shopMenus: Record<string, ShopItem[]> = {
+  sh1: [
+    { id: "sh1-gulab", name: "Gulab Jamun (250 g)", hindi: "गुलाब जामुन (250 ग्राम)", price: 90, mrp: 110, unit: "250 g box", unitHindi: "250 ग्राम डिब्बा", imageKey: "grocery-sugar" },
+    { id: "sh1-peda", name: "Desi Peda (250 g)", hindi: "देसी पेड़ा (250 ग्राम)", price: 120, mrp: 140, unit: "250 g box", unitHindi: "250 ग्राम डिब्बा", imageKey: "grocery-ghee" },
+    { id: "sh1-cake", name: "Fresh Cream Cake (500 g)", hindi: "फ्रेश क्रीम केक (500 ग्राम)", price: 340, mrp: 400, unit: "500 g", unitHindi: "500 ग्राम", imageKey: "grocery-butter" },
+    { id: "sh1-rusk", name: "Bakery Rusk", hindi: "बेकरी रस्क", price: 45, mrp: 55, unit: "300 g pack", unitHindi: "300 ग्राम पैक", imageKey: "grocery-biscuits" },
+  ],
+  sh2: [
+    { id: "sh2-soap", name: "Bathing Soap (pack of 3)", hindi: "नहाने का साबुन (3 का पैक)", price: 105, mrp: 130, unit: "3 x 100 g", unitHindi: "3 x 100 ग्राम", imageKey: "grocery-salt" },
+    { id: "sh2-shampoo", name: "Shampoo Bottle", hindi: "शैम्पू बोतल", price: 175, mrp: 210, unit: "340 ml", unitHindi: "340 मि.ली.", imageKey: "grocery-mustard-oil" },
+    { id: "sh2-detergent", name: "Detergent Powder", hindi: "डिटर्जेंट पाउडर", price: 210, mrp: 250, unit: "1 kg", unitHindi: "1 किलो", imageKey: "grocery-atta" },
+    { id: "sh2-cream", name: "Face Cream", hindi: "फेस क्रीम", price: 99, mrp: 125, unit: "50 g", unitHindi: "50 ग्राम", imageKey: "grocery-butter" },
+  ],
+  sh3: [
+    { id: "sh3-notebook", name: "Notebook (pack of 5)", hindi: "कॉपी (5 का पैक)", price: 160, mrp: 200, unit: "5 x 100 pages", unitHindi: "5 x 100 पेज", imageKey: "grocery-biscuits" },
+    { id: "sh3-pen", name: "Gel Pen (pack of 10)", hindi: "जेल पेन (10 का पैक)", price: 90, mrp: 110, unit: "10 pcs", unitHindi: "10 पीस", imageKey: "grocery-namkeen" },
+    { id: "sh3-notes", name: "UP Board Exam Notes", hindi: "यूपी बोर्ड एग्ज़ाम नोट्स", price: 220, mrp: 260, unit: "1 set", unitHindi: "1 सेट", imageKey: "grocery-tea" },
+  ],
+};
