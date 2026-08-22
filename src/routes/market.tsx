@@ -227,8 +227,10 @@ function Market() {
                 <div className="overflow-hidden rounded-2xl bg-card shadow-card">
                   <img src={img(stall.imageKey)} alt={stall.name} className="h-36 w-full object-cover" />
                   <div className="p-3">
-                    <p className="text-base font-black">{stall.name}</p>
-                    <p className="text-xs text-muted-foreground">{stall.vendor} · {stall.location}</p>
+                    <p className="text-base font-black">{lang === "hi" ? stall.nameHindi : stall.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "hi" ? stall.vendorHindi : stall.vendor} · {lang === "hi" ? stall.locationHindi : stall.location}
+                    </p>
                     <p className="mt-1 text-xs font-semibold text-primary">⭐ {stall.rating} · {stall.eta}</p>
                     <p className="mt-2 rounded-xl bg-amber-soft p-2 text-[11px] font-semibold text-amber-foreground">
                       +{rupees(FEES.stallPickupExtra)} {t(

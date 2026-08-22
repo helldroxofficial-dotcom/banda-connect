@@ -40,7 +40,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { t, area } = useApp();
+  const { t, area, lang } = useApp();
   const { data: products = [] } = useQuery(productsQuery());
   const picks = products.slice(0, 8);
 
@@ -139,7 +139,12 @@ function Home() {
         </div>
         <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
           {stalls.map((s) => (
-            <div key={s.id} className="surface hover-lift w-44 shrink-0 overflow-hidden p-0">
+            <Link
+              key={s.id}
+              to="/market"
+              search={{ tab: "bites", stall: s.id }}
+              className="surface hover-lift press w-44 shrink-0 overflow-hidden p-0"
+            >
               <div className="relative overflow-hidden">
                 <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-28 w-full object-cover" />
                 <span className="absolute bottom-2 left-2 rounded-full bg-card/90 px-2 py-0.5 text-[10px] font-extrabold text-primary backdrop-blur">
@@ -147,11 +152,15 @@ function Home() {
                 </span>
               </div>
               <div className="p-2.5">
-                <p className="line-clamp-1 text-[13px] font-extrabold leading-tight tracking-tight">{s.name}</p>
-                <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">{s.location}</p>
+                <p className="line-clamp-1 text-[13px] font-extrabold leading-tight tracking-tight">
+                  {lang === "hi" ? s.nameHindi : s.name}
+                </p>
+                <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+                  {lang === "hi" ? s.locationHindi : s.location}
+                </p>
                 <p className="mt-1 text-xs font-extrabold text-primary">₹{s.price}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
