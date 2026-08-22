@@ -189,10 +189,10 @@ function Market() {
                     <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-24 w-24 object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <p className="text-sm font-bold leading-tight">{s.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{s.vendor}</p>
+                    <p className="text-sm font-bold leading-tight">{lang === "hi" ? s.nameHindi : s.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{lang === "hi" ? s.vendorHindi : s.vendor}</p>
                     <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {s.location}
+                      <MapPin className="h-3 w-3" /> {lang === "hi" ? s.locationHindi : s.location}
                     </p>
                     <p className="mt-1 flex items-center gap-2 text-xs font-semibold">
                       <span className="flex items-center gap-0.5 text-primary">
