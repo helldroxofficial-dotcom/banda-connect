@@ -80,7 +80,7 @@ export function CartSheet() {
         })),
         item_total: totals.itemTotal,
         packaging_fee: totals.packaging,
-        delivery_fee: totals.delivery,
+        delivery_fee: totals.delivery + totals.expressFee,
         savings: totals.savings,
         total: totals.grand,
         payment_method: payment,
@@ -181,6 +181,10 @@ export function CartSheet() {
                 value={totals.delivery === 0 ? t("FREE", "फ्री") : rupees(totals.delivery)}
                 highlight={totals.delivery === 0}
               />
+              {totals.expressFee > 0 && (
+                <Row label={t("Express delivery (15 min)", "एक्सप्रेस डिलीवरी (15 मिनट)")} value={rupees(totals.expressFee)} />
+              )}
+
               <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-bold">
                 <span>{t("To pay", "देना है")}</span>
                 <span>{rupees(totals.grand)}</span>

@@ -5,17 +5,19 @@ import { ArrowLeft, Bike, MapPin, Star } from "lucide-react";
 import { categoriesQuery, productsQuery } from "@/lib/queries";
 import { ProductCard } from "@/components/app/product-card";
 import { useApp, rupees } from "@/lib/app-store";
-import { FEES, shops, stalls, stallMenus, streetItems } from "@/lib/local-data";
+import { FEES, shopMenus, shops, stalls, stallMenus, streetItems } from "@/lib/local-data";
 import { img } from "@/lib/images";
 import { QtyButton } from "@/components/app/qty-button";
 
 type Tab = "grocery" | "bites" | "shops";
 
 export const Route = createFileRoute("/market")({
-  validateSearch: (search: Record<string, unknown>): { tab: Tab } => ({
+  validateSearch: (search: Record<string, unknown>): { tab: Tab; stall?: string; shop?: string } => ({
     tab: (["grocery", "bites", "shops"] as const).includes(search["tab"] as Tab)
       ? (search["tab"] as Tab)
       : "grocery",
+    ...(typeof search["stall"] === "string" ? { stall: search["stall"] as string } : {}),
+    ...(typeof search["shop"] === "string" ? { shop: search["shop"] as string } : {}),
   }),
   head: () => ({
     meta: [
@@ -36,14 +38,19 @@ export const Route = createFileRoute("/market")({
 });
 
 function Market() {
-  const { tab } = Route.useSearch();
+  const { tab, stall: stallParam, shop: shopParam } = Route.useSearch();
   const navigate = useNavigate();
   const { t, lang } = useApp();
   const { data: categories = [] } = useQuery(categoriesQuery());
   const { data: products = [], isLoading } = useQuery(productsQuery());
   const [cat, setCat] = useState<string>("all");
-  const [bites, setBites] = useState<"items" | "stalls">("items");
-  const [stallId, setStallId] = useState<string | null>(null);
+  const [bitesState, setBites] = useState<"items" | "stalls">("items");
+  const bites = stallParam ? "stalls" : bitesState;
+  const stallId = stallParam ?? null;
+  const setStallId = (id: string | null) =>
+    void navigate({ to: "/market", search: id ? { tab: "bites", stall: id } : { tab: "bites" } });
+  const setShopId = (id: string | null) =>
+    void navigate({ to: "/market", search: id ? { tab: "shops", shop: id } : { tab: "shops" } });
 
   const list = cat === "all" ? products : products.filter((p) => p.category_slug === cat);
 
@@ -110,7 +117,7 @@ function Market() {
                 type="button"
                 onClick={() => {
                   setBites(x.id);
-                  setStallId(null);
+                  if (stallParam) setStallId(null);
                 }}
                 className={`press rounded-xl px-3 py-2 text-left transition-colors ${
                   bites === x.id ? "bg-primary text-primary-foreground" : "text-muted-foreground"
@@ -182,10 +189,10 @@ function Market() {
                     <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-24 w-24 object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <p className="text-sm font-bold leading-tight">{s.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{s.vendor}</p>
+                    <p className="text-sm font-bold leading-tight">{lang === "hi" ? s.nameHindi : s.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{lang === "hi" ? s.vendorHindi : s.vendor}</p>
                     <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {s.location}
+                      <MapPin className="h-3 w-3" /> {lang === "hi" ? s.locationHindi : s.location}
                     </p>
                     <p className="mt-1 flex items-center gap-2 text-xs font-semibold">
                       <span className="flex items-center gap-0.5 text-primary">
@@ -220,8 +227,10 @@ function Market() {
                 <div className="overflow-hidden rounded-2xl bg-card shadow-card">
                   <img src={img(stall.imageKey)} alt={stall.name} className="h-36 w-full object-cover" />
                   <div className="p-3">
-                    <p className="text-base font-black">{stall.name}</p>
-                    <p className="text-xs text-muted-foreground">{stall.vendor} · {stall.location}</p>
+                    <p className="text-base font-black">{lang === "hi" ? stall.nameHindi : stall.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "hi" ? stall.vendorHindi : stall.vendor} · {lang === "hi" ? stall.locationHindi : stall.location}
+                    </p>
                     <p className="mt-1 text-xs font-semibold text-primary">⭐ {stall.rating} · {stall.eta}</p>
                     <p className="mt-2 rounded-xl bg-amber-soft p-2 text-[11px] font-semibold text-amber-foreground">
                       +{rupees(FEES.stallPickupExtra)} {t(
@@ -275,25 +284,103 @@ function Market() {
         </div>
       )}
 
-      {tab === "shops" && (
+      {tab === "shops" && !shopParam && (
         <div className="animate-tab-in grid gap-3 sm:grid-cols-2">
           {shops.map((s) => (
-            <div key={s.id} className="overflow-hidden rounded-2xl bg-card shadow-card">
-              <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="h-32 w-full object-cover" />
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setShopId(s.id)}
+              className="press hover-lift overflow-hidden rounded-2xl bg-card text-left shadow-card"
+            >
+              <div className="overflow-hidden">
+                <img src={img(s.imageKey)} alt={s.name} loading="lazy" className="img-zoom h-32 w-full object-cover" />
+              </div>
               <div className="p-3">
-                <p className="text-sm font-bold">{s.name}</p>
-                <p className="text-xs text-muted-foreground">{s.tags}</p>
+                <p className="text-sm font-bold">{lang === "hi" ? s.nameHindi : s.name}</p>
+                <p className="text-xs text-muted-foreground">{lang === "hi" ? s.tagsHindi : s.tags}</p>
                 <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {s.location}
+                  <MapPin className="h-3 w-3" /> {lang === "hi" ? s.locationHindi : s.location}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-primary">
-                  ⭐ {s.rating} · {s.eta} min
+                <p className="mt-1 flex items-center justify-between text-xs font-semibold text-primary">
+                  <span>
+                    ⭐ {s.rating} · {s.eta} {t("min", "मिनट")}
+                  </span>
+                  <span>{t("View shop", "दुकान देखें")} →</span>
                 </p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
+
+      {tab === "shops" && shopParam && (() => {
+        const shop = shops.find((x) => x.id === shopParam);
+        if (!shop) return null;
+        const menu = shopMenus[shop.id] ?? [];
+        return (
+          <div className="animate-tab-in space-y-3">
+            <button
+              type="button"
+              onClick={() => setShopId(null)}
+              className="press flex items-center gap-1 text-sm font-bold text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" /> {t("All shops", "सभी दुकानें")}
+            </button>
+            <div className="overflow-hidden rounded-2xl bg-card shadow-card">
+              <img src={img(shop.imageKey)} alt={shop.name} className="h-36 w-full object-cover" />
+              <div className="p-3">
+                <p className="text-base font-extrabold">{lang === "hi" ? shop.nameHindi : shop.name}</p>
+                <p className="text-xs text-muted-foreground">{lang === "hi" ? shop.tagsHindi : shop.tags}</p>
+                <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3" /> {lang === "hi" ? shop.locationHindi : shop.location}
+                  <span className="ml-2 flex items-center gap-1">
+                    <Bike className="h-3 w-3" /> {shop.eta} {t("min", "मिनट")}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {menu.map((m) => (
+                <div key={m.id} className="hover-lift flex gap-3 rounded-2xl bg-card p-3 shadow-card">
+                  <div className="overflow-hidden rounded-xl">
+                    <img src={img(m.imageKey)} alt={m.name} loading="lazy" className="img-zoom h-20 w-20 object-cover" />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-sm font-bold leading-tight">{lang === "hi" ? m.hindi : m.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{lang === "hi" ? m.unitHindi : m.unit}</p>
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+                      <span className="text-sm font-bold">
+                        {rupees(m.price)}
+                        {m.mrp ? (
+                          <span className="ml-1 text-[10px] font-medium text-muted-foreground line-through">
+                            {rupees(m.mrp)}
+                          </span>
+                        ) : null}
+                      </span>
+                      <div className="w-28">
+                        <QtyButton
+                          size="sm"
+                          item={{
+                            id: m.id,
+                            name: m.name,
+                            price: m.price,
+                            mrp: m.mrp ?? null,
+                            unit: m.unit,
+                            imageKey: m.imageKey,
+                            kind: "grocery",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 }

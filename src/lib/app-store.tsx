@@ -57,8 +57,10 @@ type Ctx = {
     stallCharge: number;
     streetTotal: number;
     deliverySaved: number;
+    expressFee: number;
     grand: number;
   };
+
   cartOpen: boolean;
   setCartOpen: (v: boolean) => void;
   assistantOn: boolean;
@@ -202,9 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let delivery = 0;
     let deliverySaved = 0;
     if (groceryTotal > 0) {
-      if (express) {
-        delivery = FEES.expressFee;
-      } else if (groceryTotal >= FEES.freeDeliveryAbove) {
+      if (groceryTotal >= FEES.freeDeliveryAbove) {
         delivery = 0;
         deliverySaved = FEES.standardFee;
       } else if (groceryTotal < FEES.smallOrderBelow) {
@@ -214,6 +214,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     if (streetTotal > 0) delivery += FEES.streetDelivery;
+    // Express is always an add-on charge on top of the delivery fee.
+    const expressFee = express && itemTotal > 0 ? FEES.expressFee : 0;
+
 
     // Street food has zero packaging fee; packaging applies to grocery only.
     const packaging = groceryTotal > 0 ? FEES.packaging : 0;
@@ -228,8 +231,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deliverySaved,
       stallCharge,
       streetTotal,
-      grand: itemTotal + packaging + delivery + stallCharge,
+      expressFee,
+      grand: itemTotal + packaging + delivery + stallCharge + expressFee,
     };
+
   }, [items, express]);
 
   const t = useCallback((en: string, hi: string) => (lang === "hi" ? hi : en), [lang]);
