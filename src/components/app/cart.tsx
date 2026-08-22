@@ -80,7 +80,7 @@ export function CartSheet() {
         })),
         item_total: totals.itemTotal,
         packaging_fee: totals.packaging,
-        delivery_fee: totals.delivery,
+        delivery_fee: totals.delivery + totals.expressFee,
         savings: totals.savings,
         total: totals.grand,
         payment_method: payment,
