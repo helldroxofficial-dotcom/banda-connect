@@ -164,6 +164,39 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed: boolean
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed?: boolean
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed?: boolean
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean
@@ -220,32 +253,44 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          address_verified: boolean
           area: string | null
           created_at: string
           full_name: string | null
           id: string
           language: string
+          lat: number | null
+          lng: number | null
           phone: string | null
+          phone_verified: boolean
           wallet_balance: number
         }
         Insert: {
           address?: string | null
+          address_verified?: boolean
           area?: string | null
           created_at?: string
           full_name?: string | null
           id: string
           language?: string
+          lat?: number | null
+          lng?: number | null
           phone?: string | null
+          phone_verified?: boolean
           wallet_balance?: number
         }
         Update: {
           address?: string | null
+          address_verified?: boolean
           area?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
           language?: string
+          lat?: number | null
+          lng?: number | null
           phone?: string | null
+          phone_verified?: boolean
           wallet_balance?: number
         }
         Relationships: []
