@@ -271,7 +271,7 @@ function Services() {
 }
 
 function ListingGrid({ items }: { items: typeof rentListings }) {
-  const { t } = useApp();
+  const { t, lang } = useApp();
   return (
     <div className="animate-tab-in grid gap-3 sm:grid-cols-2">
       {items.map((l) => (

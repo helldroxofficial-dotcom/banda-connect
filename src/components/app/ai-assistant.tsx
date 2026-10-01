@@ -34,6 +34,19 @@ export function AiAssistant() {
   const ask = useServerFn(askAssistant);
 
   useEffect(() => {
+    setMsgs((current) => {
+      if (current.length !== 1 || current[0]?.role !== "assistant") return current;
+      return [{
+        role: "assistant",
+        content: t(
+          "Hi! I’m Banda Mitra. Ask me about groceries, workers, doctors or rooms.",
+          "नमस्ते! मैं बांदा मित्र हूं। किराना, मिस्त्री, डॉक्टर या कमरे के बारे में पूछिए।",
+        ),
+      }];
+    });
+  }, [lang, t]);
+
+  useEffect(() => {
     const clampInit = () => {
       try {
         const raw = localStorage.getItem(POS_KEY);
