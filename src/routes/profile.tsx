@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, LogOut, ShieldCheck, Wallet } from "lucide-react";
+import { Banknote, CheckCircle2, LogOut, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, rupees } from "@/lib/app-store";
@@ -29,6 +29,12 @@ function ProfilePage() {
   const qc = useQueryClient();
   const [form, setForm] = useState({ full_name: "", phone: "", address: "" });
   const [saving, setSaving] = useState(false);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [phonePending, setPhonePending] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [addressVerified, setAddressVerified] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
   const [amount, setAmount] = useState(500);
   const { data: atm = [] } = useQuery(atmRequestsQuery(Boolean(user)));
 
@@ -39,6 +45,9 @@ function ProfilePage() {
         phone: profile.phone ?? "",
         address: profile.address ?? "",
       });
+      setPhoneVerified(profile.phone_verified);
+      setAddressVerified(profile.address_verified);
+      if (profile.lat !== null && profile.lng !== null) setCoordinates({ lat: profile.lat, lng: profile.lng });
       if (profile.area) setArea(profile.area);
     }
   }, [profile, setArea]);
@@ -65,6 +74,10 @@ function ProfilePage() {
       toast.error(t("Enter a valid 10-digit mobile number starting with 6-9", "6-9 से शुरू होने वाला सही 10 अंकों का मोबाइल नंबर डालें"));
       return false;
     }
+    if (!phoneVerified) {
+      toast.error(t("Verify this mobile number with OTP before saving.", "सेव करने से पहले इस मोबाइल नंबर को OTP से सत्यापित करें।"));
+      return false;
+    }
     const digits = form.phone.replace(/[^\d]/g, "").slice(-10);
     if (/^(\d)\1{9}$/.test(digits) || digits === "1234567890" || digits === "9876543210") {
       toast.error(t("This number looks fake. Please enter your real number.", "यह नंबर नकली लग रहा है। कृपया असली नंबर डालें।"));
@@ -74,7 +87,76 @@ function ProfilePage() {
       toast.error(t("Address must include house no., street and landmark", "पते में मकान नं., गली और लैंडमार्क होना चाहिए"));
       return false;
     }
+    if (!addressVerified || !coordinates) {
+      toast.error(t("Verify your live location before saving the address.", "पता सेव करने से पहले अपनी वर्तमान लोकेशन सत्यापित करें।"));
+      return false;
+    }
     return true;
+  };
+
+  const normalizedPhone = () => {
+    const digits = form.phone.replace(/\D/g, "");
+    return digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
+  };
+
+  const sendPhoneOtp = async () => {
+    const phone = normalizedPhone();
+    if (!phoneOk(phone)) {
+      toast.error(t("Enter a valid 10-digit mobile number first.", "पहले सही 10 अंकों का मोबाइल नंबर डालें।"));
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ phone: `+91${phone}` });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPhonePending(true);
+    setPhoneVerified(false);
+    toast.success(t("OTP sent to this mobile number.", "इस मोबाइल नंबर पर OTP भेजा गया है।"));
+  };
+
+  const verifyPhoneOtp = async () => {
+    const phone = normalizedPhone();
+    if (!/^\d{6}$/.test(phoneCode)) {
+      toast.error(t("Enter the 6-digit OTP.", "6 अंकों का OTP डालें।"));
+      return;
+    }
+    const { error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: phoneCode, type: "phone_change" });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const { error: profileError } = await supabase.from("profiles").update({ phone, phone_verified: true }).eq("id", user?.id ?? "");
+    if (profileError) {
+      toast.error(profileError.message);
+      return;
+    }
+    setPhonePending(false);
+    setPhoneVerified(true);
+    setPhoneCode("");
+    await refreshProfile();
+    toast.success(t("Mobile number verified.", "मोबाइल नंबर सत्यापित हो गया।"));
+  };
+
+  const verifyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error(t("Location verification is not supported on this device.", "इस डिवाइस पर लोकेशन सत्यापन उपलब्ध नहीं है।"));
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setAddressVerified(true);
+        setLocating(false);
+        toast.success(t("Live location verified for this address.", "इस पते की वर्तमान लोकेशन सत्यापित हो गई।"));
+      },
+      () => {
+        setLocating(false);
+        toast.error(t("Allow location access to verify this address.", "पता सत्यापित करने के लिए लोकेशन की अनुमति दें।"));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
   };
 
   const save = async () => {
@@ -83,7 +165,15 @@ function ProfilePage() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ ...form, area, language: lang })
+      .update({
+        ...form,
+        phone: normalizedPhone(),
+        area,
+        language: lang,
+        address_verified: true,
+        lat: coordinates?.lat ?? null,
+        lng: coordinates?.lng ?? null,
+      })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -137,16 +227,44 @@ function ProfilePage() {
           />
           <input
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            onChange={(e) => {
+              setForm({ ...form, phone: e.target.value });
+              setPhoneVerified(false);
+              setPhonePending(false);
+            }}
             placeholder={t("Phone", "फोन")}
             className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
           />
+          <div className="flex flex-wrap items-center gap-2">
+            {phoneVerified ? (
+              <span className="flex items-center gap-1 text-xs font-bold text-primary"><CheckCircle2 className="h-4 w-4" /> {t("Phone verified", "फोन सत्यापित")}</span>
+            ) : (
+              <button type="button" onClick={() => void sendPhoneOtp()} className="press rounded-xl border border-primary px-3 py-2 text-xs font-bold text-primary">
+                {t("Send OTP", "OTP भेजें")}
+              </button>
+            )}
+            {phonePending && (
+              <>
+                <input value={phoneCode} onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder={t("6-digit OTP", "6 अंकों का OTP")} className="h-10 w-32 rounded-xl bg-muted px-3 text-xs outline-none" />
+                <button type="button" onClick={() => void verifyPhoneOtp()} className="press rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">{t("Verify", "सत्यापित करें")}</button>
+              </>
+            )}
+          </div>
           <textarea
             value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            onChange={(e) => {
+              setForm({ ...form, address: e.target.value });
+              setAddressVerified(false);
+            }}
             placeholder={t("House no., street, landmark", "मकान नं., गली, लैंडमार्क")}
             className="min-h-20 w-full rounded-xl bg-muted p-3 text-sm outline-none"
           />
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={verifyLocation} disabled={locating} className="press flex items-center gap-2 rounded-xl border border-primary px-3 py-2 text-xs font-bold text-primary disabled:opacity-60">
+              <MapPin className="h-4 w-4" /> {locating ? t("Checking location…", "लोकेशन जांच रहे…") : t("Verify live location", "वर्तमान लोकेशन सत्यापित करें")}
+            </button>
+            {addressVerified && <span className="flex items-center gap-1 text-xs font-bold text-primary"><CheckCircle2 className="h-4 w-4" /> {t("Location verified", "लोकेशन सत्यापित")}</span>}
+          </div>
           <select
             value={area}
             onChange={(e) => setArea(e.target.value)}

@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Phone changes use the auth provider's OTP verification, while address verification stores browser geolocation coordinates; this keeps profile trust checks server-backed rather than client-only.
