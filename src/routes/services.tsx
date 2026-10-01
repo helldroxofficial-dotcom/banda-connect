@@ -22,6 +22,40 @@ import { demandPostsQuery } from "@/lib/queries";
 type Tab = "workers" | "skills" | "health" | "rooms" | "tutors" | "demand";
 const TABS: Tab[] = ["workers", "skills", "health", "rooms", "tutors", "demand"];
 
+const workerCopy: Record<string, { name: { en: string; hi: string }; location: { en: string; hi: string }; experience: { en: string; hi: string }; quote: { en: string; hi: string } }> = {
+  sp1: { name: { en: "Ramesh Kumar", hi: "रमेश कुमार" }, location: { en: "Alha Ghat, Banda", hi: "अल्हा घाट, बांदा" }, experience: { en: "8 yrs exp", hi: "8 साल का अनुभव" }, quote: { en: "Tap leak fixed in 20 minutes, with a fixed rate.", hi: "नल का रिसाव 20 मिनट में ठीक किया, रेट भी फिक्स था।" } },
+  sp2: { name: { en: "Sonu Vishwakarma", hi: "सोनू विश्वकर्मा" }, location: { en: "Civil Lines, Banda", hi: "सिविल लाइंस, बांदा" }, experience: { en: "12 yrs exp", hi: "12 साल का अनुभव" }, quote: { en: "Checked the whole home's wiring without extra charges.", hi: "पूरे घर की वायरिंग चेक की, कोई अतिरिक्त चार्ज नहीं लिया।" } },
+  sp3: { name: { en: "Imran Bike Point", hi: "इमरान बाइक पॉइंट" }, location: { en: "Station Road, Banda", hi: "स्टेशन रोड, बांदा" }, experience: { en: "6 yrs exp", hi: "6 साल का अनुभव" }, quote: { en: "Started the bike at home so there was no need to search for a mechanic.", hi: "घर आकर बाइक स्टार्ट कर दी, मैकेनिक ढूंढने की जरूरत नहीं पड़ी।" } },
+  sp4: { name: { en: "Deshraj Carpenter", hi: "देशराज बढ़ई" }, location: { en: "Mataundh Road, Banda", hi: "मटौंध रोड, बांदा" }, experience: { en: "10 yrs exp", hi: "10 साल का अनुभव" }, quote: { en: "Fitted the cupboard door perfectly and worked neatly.", hi: "अलमारी का दरवाजा सही फिट किया और सफाई से काम किया।" } },
+};
+
+const skillCopy: Record<string, { name: { en: string; hi: string }; service: { en: string; hi: string }; location: { en: string; hi: string } }> = {
+  sk1: { name: { en: "Aarav Studio", hi: "आरव स्टूडियो" }, service: { en: "Product & pre-wedding photography", hi: "प्रोडक्ट और प्री-वेडिंग फोटोग्राफी" }, location: { en: "Station Road, Banda", hi: "स्टेशन रोड, बांदा" } },
+  sk2: { name: { en: "Banda Web Solutions", hi: "बांदा वेब सॉल्यूशंस" }, service: { en: "Website & app development for shops", hi: "दुकानों के लिए वेबसाइट और ऐप डेवलपमेंट" }, location: { en: "Civil Lines, Banda", hi: "सिविल लाइंस, बांदा" } },
+  sk3: { name: { en: "Ansari Laptop Care", hi: "अंसारी लैपटॉप केयर" }, service: { en: "Laptop & mobile repair, data recovery", hi: "लैपटॉप और मोबाइल रिपेयर, डेटा रिकवरी" }, location: { en: "Chowk Bazaar, Banda", hi: "चौक बाजार, बांदा" } },
+};
+
+const doctorCopy: Record<string, { name: { en: string; hi: string }; speciality: { en: string; hi: string }; clinic: { en: string; hi: string } }> = {
+  d1: { name: { en: "Dr. S. K. Tiwari", hi: "डॉ. एस. के. तिवारी" }, speciality: { en: "General Physician (MBBS, MD)", hi: "जनरल फिजिशियन (MBBS, MD)" }, clinic: { en: "Tiwari Clinic, Station Road", hi: "तिवारी क्लिनिक, स्टेशन रोड" } },
+  d2: { name: { en: "Dr. Anjali Verma", hi: "डॉ. अंजली वर्मा" }, speciality: { en: "Child Specialist (Pediatrician)", hi: "बाल रोग विशेषज्ञ" }, clinic: { en: "Verma Child Care, Civil Lines", hi: "वर्मा चाइल्ड केयर, सिविल लाइंस" } },
+};
+
+const labCopy: Record<string, { en: string; hi: string }> = {
+  l1: { en: "Complete Blood Count (CBC)", hi: "कम्प्लीट ब्लड काउंट (CBC)" },
+  l2: { en: "Full Body Checkup (60 params)", hi: "फुल बॉडी चेकअप (60 जांच)" },
+  l3: { en: "Diabetes Profile (HbA1c)", hi: "डायबिटीज प्रोफाइल (HbA1c)" },
+  l4: { en: "Thyroid Profile (T3 T4 TSH)", hi: "थायरॉइड प्रोफाइल (T3 T4 TSH)" },
+};
+
+const listingCopy: Record<string, { meta: { en: string; hi: string }; location: { en: string; hi: string }; by: { en: string; hi: string } }> = {
+  r1: { meta: { en: "1 BHK • Furnished • Bachelors allowed", hi: "1 BHK • फर्निश्ड • बैचलर स्वीकार्य" }, location: { en: "Near Degree College, Banda", hi: "डिग्री कॉलेज के पास, बांदा" }, by: { en: "Owner: Mahesh Gupta", hi: "मालिक: महेश गुप्ता" } },
+  r2: { meta: { en: "2 BHK • Semi-furnished • Family only", hi: "2 BHK • सेमी-फर्निश्ड • केवल परिवार" }, location: { en: "Civil Lines, Banda", hi: "सिविल लाइंस, बांदा" }, by: { en: "Owner: Sunita Devi", hi: "मालिक: सुनीता देवी" } },
+  r3: { meta: { en: "Student • Budget under ₹2,500", hi: "छात्र • ₹2,500 से कम बजट" }, location: { en: "Near Degree College", hi: "डिग्री कॉलेज के पास" }, by: { en: "Student: Rahul", hi: "छात्र: राहुल" } },
+  t1: { meta: { en: "Class 6-10 • CBSE / UP Board", hi: "कक्षा 6-10 • CBSE / UP बोर्ड" }, location: { en: "Station Road, Banda", hi: "स्टेशन रोड, बांदा" }, by: { en: "Tutor: Amit Sir", hi: "ट्यूटर: अमित सर" } },
+  t2: { meta: { en: "Reasoning • Quant • English", hi: "रीजनिंग • क्वांट • इंग्लिश" }, location: { en: "Civil Lines, Banda", hi: "सिविल लाइंस, बांदा" }, by: { en: "Tutor: Priya Ma'am", hi: "ट्यूटर: प्रिया मैम" } },
+  t3: { meta: { en: "Evening slot • Home visit", hi: "शाम का समय • घर पर पढ़ाई" }, location: { en: "Babu Pura, Banda", hi: "बाबू पुरा, बांदा" }, by: { en: "Student: Neha", hi: "छात्रा: नेहा" } },
+};
+
 export const Route = createFileRoute("/services")({
   validateSearch: (search: Record<string, unknown>): { tab: Tab } => ({
     tab: TABS.includes(search["tab"] as Tab) ? (search["tab"] as Tab) : "workers",
