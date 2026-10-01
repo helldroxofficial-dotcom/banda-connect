@@ -47,7 +47,7 @@ export const Route = createFileRoute("/services")({
 function Services() {
   const { tab } = Route.useSearch();
   const navigate = useNavigate();
-  const { t } = useApp();
+  const { t, lang } = useApp();
   const [trade, setTrade] = useState<string>("all");
 
   const labels: Record<Tab, string> = {
@@ -90,7 +90,7 @@ function Services() {
           <div className="no-scrollbar flex gap-2 overflow-x-auto">
             <Chip active={trade === "all"} onClick={() => setTrade("all")} label={t("All", "सभी")} />
             {tradeCategories.map((c) => (
-              <Chip key={c.id} active={trade === c.id} onClick={() => setTrade(c.id)} label={c.label} />
+              <Chip key={c.id} active={trade === c.id} onClick={() => setTrade(c.id)} label={lang === "hi" ? c.hindi : c.label} />
             ))}
           </div>
           {workerList.map((p) => (
@@ -98,9 +98,9 @@ function Services() {
               <div className="flex gap-3">
                 <img src={img(p.imageKey)} alt={p.name} loading="lazy" className="h-16 w-16 rounded-xl object-cover" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold">{p.name}</p>
+                  <p className="text-sm font-bold">{workerCopy[p.id]?.name[lang] ?? p.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {p.location} · {p.experience} · {p.distanceKm} km
+                    {workerCopy[p.id]?.location[lang] ?? p.location} · {workerCopy[p.id]?.experience[lang] ?? p.experience} · {p.distanceKm} km
                   </p>
                   <p className="mt-1 flex items-center gap-2 text-xs font-semibold">
                     <span className="flex items-center gap-0.5 text-primary">
@@ -110,7 +110,7 @@ function Services() {
                   </p>
                 </div>
               </div>
-              <p className="mt-2 rounded-xl bg-muted p-2 text-xs italic text-muted-foreground">“{p.reelQuote}”</p>
+              <p className="mt-2 rounded-xl bg-muted p-2 text-xs italic text-muted-foreground">“{workerCopy[p.id]?.quote[lang] ?? p.reelQuote}”</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -145,10 +145,10 @@ function Services() {
                 <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
                   {s.tag}
                 </span>
-                <p className="mt-1 text-sm font-bold">{s.name}</p>
-                <p className="text-xs text-muted-foreground">{s.service}</p>
+                  <p className="mt-1 text-sm font-bold">{skillCopy[s.id]?.name[lang] ?? s.name}</p>
+                <p className="text-xs text-muted-foreground">{skillCopy[s.id]?.service[lang] ?? s.service}</p>
                 <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {s.location} · {s.distanceKm} km
+                  <MapPin className="h-3 w-3" /> {skillCopy[s.id]?.location[lang] ?? s.location} · {s.distanceKm} km
                 </p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-sm font-bold">{t("From", "शुरू")} {rupees(s.startingAt)}</span>
@@ -174,9 +174,9 @@ function Services() {
             <div key={d.id} className="flex gap-3 rounded-2xl bg-card p-3 shadow-card">
               <img src={img(d.imageKey)} alt={d.name} loading="lazy" className="h-16 w-16 rounded-xl object-cover" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold">{d.name}</p>
-                <p className="text-xs text-muted-foreground">{d.speciality}</p>
-                <p className="truncate text-xs text-muted-foreground">{d.clinic}</p>
+                <p className="text-sm font-bold">{doctorCopy[d.id]?.name[lang] ?? d.name}</p>
+                <p className="text-xs text-muted-foreground">{doctorCopy[d.id]?.speciality[lang] ?? d.speciality}</p>
+                <p className="truncate text-xs text-muted-foreground">{doctorCopy[d.id]?.clinic[lang] ?? d.clinic}</p>
                 <div className="mt-1 flex items-center justify-between">
                   <span className="text-xs font-semibold text-primary">
                     ⭐ {d.rating} · {rupees(d.fee)}
@@ -199,7 +199,7 @@ function Services() {
               {labTests.map((l) => (
                 <div key={l.id} className="flex items-center justify-between border-b border-border pb-2 last:border-0">
                   <div>
-                    <p className="text-xs font-semibold">{l.name}</p>
+                    <p className="text-xs font-semibold">{labCopy[l.id]?.[lang] ?? l.name}</p>
                     <p className="text-[11px] text-muted-foreground">
                       <span className="line-through">{rupees(l.mrp)}</span>{" "}
                       <span className="font-bold text-primary">{rupees(l.price)}</span>
@@ -252,9 +252,9 @@ function ListingGrid({ items }: { items: typeof rentListings }) {
               {l.type === "demand" ? t("Wanted", "चाहिए") : t("Available", "उपलब्ध")}
             </span>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">{l.meta}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{listingCopy[l.id]?.meta[lang] ?? l.meta}</p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" /> {l.location} · {l.distanceKm} km
+            <MapPin className="h-3 w-3" /> {listingCopy[l.id]?.location[lang] ?? l.location} · {l.distanceKm} km
           </p>
           <div className="mt-2 flex items-center justify-between">
             <span className="text-sm font-bold text-primary">{l.price}</span>
@@ -266,7 +266,7 @@ function ListingGrid({ items }: { items: typeof rentListings }) {
               {t("Contact", "संपर्क")}
             </button>
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">{l.by} · ⭐ {l.rating}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{listingCopy[l.id]?.by[lang] ?? l.by} · ⭐ {l.rating}</p>
         </div>
       ))}
     </div>
@@ -394,7 +394,8 @@ function DemandStrip({ category }: { category: string }) {
   const navigate = useNavigate();
   const { data: posts = [] } = useQuery(demandPostsQuery());
   const list = posts.filter((p) => p.category === category).slice(0, 5);
-  const label = demandCategories.find((c) => c.id === category)?.label ?? category;
+  const demandCategory = demandCategories.find((c) => c.id === category);
+  const label = demandCategory ? (t(demandCategory.label, demandCategory.hindi)) : category;
   if (list.length === 0) return null;
 
   return (

@@ -28,8 +28,12 @@ type Profile = {
   id: string;
   full_name: string | null;
   phone: string | null;
+  phone_verified: boolean;
   area: string | null;
   address: string | null;
+  address_verified: boolean;
+  lat: number | null;
+  lng: number | null;
   wallet_balance: number;
   language: string;
 };

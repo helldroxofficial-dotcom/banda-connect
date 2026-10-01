@@ -165,7 +165,15 @@ function ProfilePage() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ ...form, phone: normalizedPhone(), area, language: lang, address_verified: true, lat: coordinates?.lat, lng: coordinates?.lng })
+      .update({
+        ...form,
+        phone: normalizedPhone(),
+        area,
+        language: lang,
+        address_verified: true,
+        lat: coordinates?.lat ?? null,
+        lng: coordinates?.lng ?? null,
+      })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
