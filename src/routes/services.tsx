@@ -152,7 +152,7 @@ function Services() {
                   className="press rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground"
                 >
                   <CalendarCheck className="mr-1 inline h-3.5 w-3.5" />
-                  {t("Book visit", "विज़िट बुक करें")}
+                  {t(`Book visit · ₹${FEES.visitCharge}`, `विज़िट बुक करें · ₹${FEES.visitCharge}`)}
                 </button>
                 <button
                   type="button"

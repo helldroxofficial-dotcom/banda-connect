@@ -84,6 +84,7 @@ export function AiAssistant() {
     clearLongPress();
     longPressRef.current = setTimeout(() => {
       longPressStartedRef.current = true;
+      movedRef.current = true;
       setDragging(true);
       setHideZone(true);
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
