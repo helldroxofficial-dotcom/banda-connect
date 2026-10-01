@@ -78,6 +78,8 @@ export function AiAssistant() {
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!pos) return;
+    const target = e.currentTarget;
+    const pointerId = e.pointerId;
     movedRef.current = false;
     offsetRef.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     longPressStartedRef.current = false;
@@ -87,7 +89,7 @@ export function AiAssistant() {
       movedRef.current = true;
       setDragging(true);
       setHideZone(true);
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      target.setPointerCapture(pointerId);
     }, 450);
   };
 
