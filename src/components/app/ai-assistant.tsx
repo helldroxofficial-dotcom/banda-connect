@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, Move, Send, X } from "lucide-react";
+import { Bot, Send, X } from "lucide-react";
 import { useApp } from "@/lib/app-store";
 import { askAssistant } from "@/lib/assistant.functions";
 
@@ -17,12 +17,18 @@ export function AiAssistant() {
   const [busy, setBusy] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [hideZone, setHideZone] = useState(false);
   const movedRef = useRef(false);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressStartedRef = useRef(false);
   const offsetRef = useRef<Pos>({ x: 0, y: 0 });
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: "assistant",
-      content: "Namaste! Main Banda Mitra hoon. Grocery, mistri, doctor ya kamre ke baare me poochhiye.",
+      content: t(
+        "Hi! I’m Banda Mitra. Ask me about groceries, workers, doctors or rooms.",
+        "नमस्ते! मैं बांदा मित्र हूं। किराना, मिस्त्री, डॉक्टर या कमरे के बारे में पूछिए।",
+      ),
     },
   ]);
   const ask = useServerFn(askAssistant);
@@ -52,12 +58,23 @@ export function AiAssistant() {
     y: Math.min(Math.max(70, p.y), Math.max(70, window.innerHeight - SIZE - 70)),
   });
 
+  const clearLongPress = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+    longPressRef.current = null;
+  };
+
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!pos) return;
     movedRef.current = false;
-    setDragging(true);
     offsetRef.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    longPressStartedRef.current = false;
+    clearLongPress();
+    longPressRef.current = setTimeout(() => {
+      longPressStartedRef.current = true;
+      setDragging(true);
+      setHideZone(true);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }, 450);
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -66,9 +83,15 @@ export function AiAssistant() {
     setPos(clamp({ x: e.clientX - offsetRef.current.x, y: e.clientY - offsetRef.current.y }));
   };
 
-  const onPointerUp = () => {
-    if (!dragging) return;
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    clearLongPress();
+    if (!longPressStartedRef.current) return;
     setDragging(false);
+    setHideZone(false);
+    if (e.clientY > window.innerHeight - 150) {
+      setAssistantOn(false);
+      return;
+    }
     if (pos) {
       try {
         localStorage.setItem(POS_KEY, JSON.stringify(pos));
@@ -76,6 +99,7 @@ export function AiAssistant() {
         /* ignore */
       }
     }
+    longPressStartedRef.current = false;
   };
 
   const send = async () => {
@@ -110,9 +134,9 @@ export function AiAssistant() {
             onPointerCancel={onPointerUp}
             role="button"
             tabIndex={0}
-            aria-label="Open Banda Mitra assistant. Drag to move."
+            aria-label={t("Open Banda Mitra assistant. Long press to move.", "बांदा मित्र खोलें। स्थान बदलने के लिए देर तक दबाएं।")}
             onClick={() => {
-              if (!movedRef.current) setOpen(true);
+              if (!movedRef.current && !longPressStartedRef.current) setOpen(true);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") setOpen(true);
@@ -120,7 +144,6 @@ export function AiAssistant() {
             className="press animate-pulse-ring grid h-14 w-14 cursor-grab place-items-center rounded-full bg-gradient-to-br from-amber to-amber-soft text-amber-foreground shadow-[var(--shadow-float)] active:cursor-grabbing"
           >
             <Bot className="pointer-events-none h-6 w-6" />
-            <Move className="pointer-events-none absolute -bottom-0.5 -left-0.5 h-4 w-4 rounded-full bg-card p-0.5 text-muted-foreground" />
           </div>
           <button
             type="button"
@@ -130,6 +153,12 @@ export function AiAssistant() {
           >
             <X className="h-3 w-3" />
           </button>
+        </div>
+      )}
+
+      {hideZone && (
+        <div className="pointer-events-none fixed inset-x-4 bottom-16 z-40 flex h-16 items-center justify-center rounded-2xl border-2 border-dashed border-destructive bg-card/95 text-sm font-bold text-destructive shadow-lg">
+          {t("Drop here to hide Banda Mitra", "बांदा मित्र छिपाने के लिए यहां छोड़ें")}
         </div>
       )}
 

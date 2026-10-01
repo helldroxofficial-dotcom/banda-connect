@@ -34,6 +34,17 @@ function Auth() {
   }, [authReady, user, navigate]);
 
   const submit = async () => {
+    if (mode === "signup") {
+      const phone = form.phone.replace(/\D/g, "");
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        toast.error(t("Enter a valid 10-digit mobile number starting with 6-9.", "6-9 से शुरू होने वाला सही 10 अंकों का मोबाइल नंबर डालें।"));
+        return;
+      }
+      if (form.name.trim().length < 3) {
+        toast.error(t("Enter your real full name.", "अपना असली पूरा नाम लिखें।"));
+        return;
+      }
+    }
     setBusy(true);
     if (mode === "signup") {
       const { data, error } = await supabase.auth.signUp({
@@ -41,7 +52,7 @@ function Auth() {
         password: form.password,
         options: {
           emailRedirectTo: window.location.origin,
-          data: { full_name: form.name, phone: form.phone },
+          data: { full_name: form.name.trim(), phone: form.phone.replace(/\D/g, "") },
         },
       });
       setBusy(false);

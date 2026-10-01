@@ -83,8 +83,8 @@ function Services() {
           <DemandStrip category="workers" />
           <p className="rounded-2xl bg-primary-soft p-3 text-xs font-semibold text-accent-foreground">
             🛠 {t(
-              `Inspection visit ₹${FEES.inspection} — adjusted in the final bill. Rates are fixed, no bargaining.`,
-              `इंस्पेक्शन विज़िट ₹${FEES.inspection} — फाइनल बिल में एडजस्ट। रेट फिक्स हैं, मोल-भाव नहीं।`,
+              `Visit charge ₹${FEES.visitCharge} — this covers coming to your home only. Any time spent, opening parts or actual work is billed separately according to the service, whether or not the repair is completed.`,
+              `विज़िट चार्ज ₹${FEES.visitCharge} — यह केवल आपके घर आने का है। लगाया गया समय, पार्ट्स खोलना या किया गया काम सर्विस के अनुसार अलग से लगेगा, काम पूरा हो या न हो।`,
             )}
           </p>
           <div className="no-scrollbar flex gap-2 overflow-x-auto">
