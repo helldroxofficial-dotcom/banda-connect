@@ -28,6 +28,7 @@ function Auth() {
   const [form, setForm] = useState({ email: "", password: "", name: "", phone: "" });
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   useEffect(() => {
     if (authReady && user) void navigate({ to: "/profile" });
@@ -84,15 +85,22 @@ function Auth() {
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error(result.error.message ?? "Google sign-in failed");
-      return;
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (result.error) {
+        toast.error(result.error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));
+        return;
+      }
+      if (result.redirected) return;
+      void navigate({ to: "/" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("Google sign-in failed.", "Google sign-in असफल रहा।"));
+    } finally {
+      setGoogleBusy(false);
     }
-    if (result.redirected) return;
-    void navigate({ to: "/" });
   };
 
   return (
@@ -178,10 +186,11 @@ function Auth() {
 
         <button
           type="button"
+          disabled={googleBusy}
           onClick={() => void google()}
-          className="press w-full rounded-xl border border-border py-3 text-sm font-bold"
+          className="press w-full rounded-xl border border-border py-3 text-sm font-bold disabled:opacity-60"
         >
-          {t("Continue with Google", "Google से जारी रखें")}
+          {googleBusy ? t("Opening Google…", "Google खुल रहा है…") : t("Continue with Google", "Google से जारी रखें")}
         </button>
       </div>
     </div>

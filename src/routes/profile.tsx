@@ -37,6 +37,9 @@ function ProfilePage() {
   const [locating, setLocating] = useState(false);
   const [amount, setAmount] = useState(500);
   const { data: atm = [] } = useQuery(atmRequestsQuery(Boolean(user)));
+  const mapUrl = coordinates
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng - 0.008},${coordinates.lat - 0.006},${coordinates.lng + 0.008},${coordinates.lat + 0.006}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`
+    : null;
 
   useEffect(() => {
     if (profile) {
@@ -265,6 +268,20 @@ function ProfilePage() {
             </button>
             {addressVerified && <span className="flex items-center gap-1 text-xs font-bold text-primary"><CheckCircle2 className="h-4 w-4" /> {t("Location verified", "लोकेशन सत्यापित")}</span>}
           </div>
+          {mapUrl && (
+            <div className="overflow-hidden rounded-2xl border border-border bg-muted">
+              <iframe
+                title={t("Verified delivery location map", "सत्यापित डिलीवरी लोकेशन का नक्शा")}
+                src={mapUrl}
+                className="h-48 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <a href={`https://www.openstreetmap.org/?mlat=${coordinates?.lat}&mlon=${coordinates?.lng}#map=17/${coordinates?.lat}/${coordinates?.lng}`} target="_blank" rel="noreferrer" className="block px-3 py-2 text-xs font-bold text-primary">
+                {t("Open larger map", "बड़ा नक्शा खोलें")} →
+              </a>
+            </div>
+          )}
           <select
             value={area}
             onChange={(e) => setArea(e.target.value)}
@@ -342,6 +359,14 @@ function ProfilePage() {
           <ShieldCheck className="h-4 w-4 text-primary" /> {t("Admin dashboard", "एडमिन डैशबोर्ड")}
         </Link>
       )}
+
+      <Link to="/sell" className="press flex items-center gap-2 rounded-2xl bg-card p-4 text-sm font-bold shadow-card">
+        <MapPin className="h-4 w-4 text-primary" /> {t("List your business", "अपना कारोबार लिस्ट करें")}
+      </Link>
+
+      <Link to="/delivery" className="press flex items-center gap-2 rounded-2xl bg-card p-4 text-sm font-bold shadow-card">
+        <ShieldCheck className="h-4 w-4 text-primary" /> {t("Delivery partner", "डिलीवरी पार्टनर")}
+      </Link>
 
       <Link to="/help" className="press block rounded-2xl bg-card p-4 text-sm font-bold shadow-card">
         {t("Help & policies", "मदद और नीतियां")}
