@@ -73,6 +73,7 @@ type Ctx = {
   user: User | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isRider: boolean;
   authReady: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -94,6 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isRider, setIsRider] = useState(false);
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
@@ -126,6 +128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ]);
     setProfile((prof as Profile) ?? null);
     setIsAdmin(Boolean(roles?.some((r) => r.role === "admin")));
+    setIsRider(Boolean(roles?.some((r) => r.role === "rider")));
   }, []);
 
   useEffect(() => {
@@ -137,6 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setIsRider(false);
       }
     });
     void supabase.auth.getSession().then(({ data }) => {
@@ -276,6 +280,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     user: session?.user ?? null,
     profile,
     isAdmin,
+    isRider,
     authReady,
     refreshProfile,
     signOut,
