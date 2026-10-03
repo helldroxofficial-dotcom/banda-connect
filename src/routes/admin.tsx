@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, rupees } from "@/lib/app-store";
-import { adminProductsQuery, allOrdersQuery, atmRequestsQuery, categoriesQuery } from "@/lib/queries";
+import { adminListingsQuery, adminProductsQuery, allOrdersQuery, atmRequestsQuery, categoriesQuery } from "@/lib/queries";
 import { IMAGES } from "@/lib/images";
 
 const STATUSES = ["placed", "packed", "on_the_way", "delivered", "cancelled"];
@@ -29,6 +29,7 @@ function Admin() {
   const { data: orders = [] } = useQuery(allOrdersQuery(isAdmin));
   const { data: atm = [] } = useQuery(atmRequestsQuery(isAdmin));
   const { data: categories = [] } = useQuery(categoriesQuery());
+  const { data: listings = [] } = useQuery(adminListingsQuery(isAdmin));
   const [form, setForm] = useState({
     name: "",
     hindi: "",
@@ -96,6 +97,17 @@ function Admin() {
     const { error } = await supabase.from("mini_atm_requests").update({ status }).eq("id", id);
     if (error) toast.error(error.message);
     else void qc.invalidateQueries({ queryKey: ["atm-requests"] });
+  };
+
+  const setListingStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("service_listings").update({ status }).eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    void qc.invalidateQueries({ queryKey: ["admin-listings"] });
+    void qc.invalidateQueries({ queryKey: ["listings"] });
+    toast.success(t("Listing status updated", "लिस्टिंग का स्टेटस अपडेट हुआ"));
   };
 
   const revenue = orders.reduce((s, o) => s + Number(o.total), 0);
@@ -176,6 +188,28 @@ function Admin() {
         >
           {t("Add product", "प्रोडक्ट जोड़ें")}
         </button>
+      </div>
+
+      <div className="rounded-2xl bg-card p-4 shadow-card">
+        <p className="mb-2 text-sm font-bold">{t("Seller & delivery applications", "सेलर और डिलीवरी आवेदन")}</p>
+        {listings.length === 0 && <p className="text-xs text-muted-foreground">{t("No applications yet.", "अभी कोई आवेदन नहीं है।")}</p>}
+        <div className="space-y-2">
+          {listings.map((listing) => (
+            <div key={listing.id} className="rounded-xl bg-muted p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold">{listing.title}</p>
+                  <p className="text-[11px] text-muted-foreground">{listing.provider_name ?? "—"} · {listing.kind} · {listing.location ?? "Banda"}</p>
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground">{listing.status}</span>
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button type="button" onClick={() => void setListingStatus(listing.id, "approved")} className="press rounded-lg bg-primary px-3 py-1.5 text-[10px] font-bold text-primary-foreground">{t("Approve", "मंज़ूर")}</button>
+                <button type="button" onClick={() => void setListingStatus(listing.id, "rejected")} className="press rounded-lg border border-border px-3 py-1.5 text-[10px] font-bold">{t("Reject", "अस्वीकार")}</button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="rounded-2xl bg-card p-4 shadow-card">

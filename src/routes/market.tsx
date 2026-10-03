@@ -42,7 +42,7 @@ function Market() {
   const navigate = useNavigate();
   const { t, lang } = useApp();
   const { data: categories = [] } = useQuery(categoriesQuery());
-  const { data: products = [], isLoading } = useQuery(productsQuery());
+  const { data: products = [], isLoading, isError, refetch } = useQuery(productsQuery());
   const [cat, setCat] = useState<string>("all");
   const [bitesState, setBites] = useState<"items" | "stalls">("items");
   const bites = stallParam ? "stalls" : bitesState;
@@ -95,6 +95,17 @@ function Market() {
           </div>
           {isLoading ? (
             <p className="py-10 text-center text-sm text-muted-foreground">{t("Loading…", "लोड हो रहा है…")}</p>
+          ) : isError ? (
+            <div className="surface flex flex-col items-center gap-3 p-6 text-center">
+              <p className="text-sm font-bold">{t("Grocery is taking longer than usual.", "किराना लोड होने में सामान्य से ज़्यादा समय लग रहा है।")}</p>
+              <button type="button" onClick={() => void refetch()} className="press rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
+                {t("Try again", "फिर कोशिश करें")}
+              </button>
+            </div>
+          ) : list.length === 0 ? (
+            <div className="surface p-6 text-center text-sm text-muted-foreground">
+              {t("No grocery items in this category yet.", "इस कैटेगरी में अभी किराना उपलब्ध नहीं है।")}
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {list.map((p) => (
