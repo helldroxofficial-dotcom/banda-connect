@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Phone changes use the auth provider's OTP verification, while address verification stores browser geolocation coordinates; this keeps profile trust checks server-backed rather than client-only.
+- Seller and delivery applications reuse the existing service_listings workflow until a dedicated operations schema is available; this keeps admin approval server-backed without duplicating public listing data.

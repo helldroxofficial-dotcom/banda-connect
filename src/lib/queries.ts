@@ -35,6 +35,7 @@ const FALLBACK_PRODUCTS: Product[] = [
 export const categoriesQuery = () =>
   queryOptions({
     queryKey: ["categories"],
+    initialData: FALLBACK_CATEGORIES,
     queryFn: async (): Promise<Category[]> => {
       const { data, error } = await supabase
         .from("categories")
@@ -49,6 +50,7 @@ export const categoriesQuery = () =>
 export const productsQuery = () =>
   queryOptions({
     queryKey: ["products"],
+    initialData: FALLBACK_PRODUCTS,
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from("products")
