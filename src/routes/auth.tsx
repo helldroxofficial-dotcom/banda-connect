@@ -85,6 +85,10 @@ function Auth() {
   };
 
   const google = async () => {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      toast.error(t("Google sign-in is available in the hosted preview, not this local test page.", "Google sign-in hosted preview में उपलब्ध है, इस local test page में नहीं।"));
+      return;
+    }
     setGoogleBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
