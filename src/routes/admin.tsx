@@ -93,6 +93,21 @@ function Admin() {
     }
   };
 
+  const sendToDelivery = async (order: { id: string; area: string | null; address: string | null; delivery_fee: number | null }) => {
+    const { error } = await supabase.from("delivery_jobs").insert({
+      order_id: order.id,
+      area: order.area,
+      address: order.address,
+      payout: Number(order.delivery_fee ?? 0) || 20,
+      status: "available",
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(t("Job posted for riders", "राइडर्स के लिए काम डाल दिया"));
+  };
+
   const setAtmStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("mini_atm_requests").update({ status }).eq("id", id);
     if (error) toast.error(error.message);
