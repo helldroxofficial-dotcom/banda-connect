@@ -33,10 +33,55 @@ export const Route = createFileRoute("/delivery")({
 });
 
 function DeliveryPage() {
-  const { t, user, authReady, profile, area } = useApp();
+  const { t, user, authReady, profile, area, isRider } = useApp();
   const [form, setForm] = useState({ name: profile?.full_name ?? "", vehicle: "bike", area });
   const [saving, setSaving] = useState(false);
   const [sent, setSent] = useState(false);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobsBusy, setJobsBusy] = useState(false);
+
+  const loadJobs = useCallback(async () => {
+    if (!user || !isRider) return;
+    const { data, error } = await supabase
+      .from("delivery_jobs")
+      .select("id, order_id, rider_id, status, area, address, payout")
+      .order("created_at", { ascending: false });
+    if (!error) setJobs((data as Job[]) ?? []);
+  }, [user, isRider]);
+
+  useEffect(() => {
+    void loadJobs();
+  }, [loadJobs]);
+
+  const claimJob = async (job: Job) => {
+    if (!user) return;
+    setJobsBusy(true);
+    const { error } = await supabase
+      .from("delivery_jobs")
+      .update({ rider_id: user.id, status: "accepted" })
+      .eq("id", job.id)
+      .is("rider_id", null)
+      .eq("status", "available");
+    setJobsBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(t("Job accepted", "काम स्वीकार किया"));
+    void loadJobs();
+  };
+
+  const advanceJob = async (job: Job) => {
+    const next = NEXT_STATUS[job.status];
+    if (!next) return;
+    setJobsBusy(true);
+    const { error } = await supabase
+      .from("delivery_jobs")
+      .update({ status: next })
+      .eq("id", job.id)
+      .eq("rider_id", user?.id ?? "");
+    setJobsBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next === "delivered" ? t("Marked delivered", "डिलीवर हो गया") : t("Picked up", "पिक अप हो गया"));
+    void loadJobs();
+  };
 
   if (authReady && !user) return <div className="surface p-6 text-center"><p className="text-sm font-bold">{t("Sign in to apply as a delivery partner", "डिलीवरी पार्टनर बनने के लिए साइन इन करें")}</p><Link to="/auth" className="press mt-3 inline-flex rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">{t("Sign in", "साइन इन")}</Link></div>;
 
