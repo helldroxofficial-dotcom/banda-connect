@@ -1,10 +1,10 @@
 # Banda Bazaar launch roadmap
 
 - [x] Stabilize Grocery loading and empty/error states
-- [ ] Repair Google sign-in callback flow and configure provider (hosted database/auth is paused)
+- [x] Repair Google sign-in callback flow and configure provider (Google already enabled on backend)
 - [x] Add live-location map preview and verified address submission
 - [x] Add admin and seller review screens plus delivery partner application
 - [x] Add seller listing submission and admin review flow
-- [ ] Add secure rider assignment and delivery job/status flow (requires active hosted database)
-- [ ] Verify auth, map, seller, admin and rider flows against the hosted backend
-- [ ] Complete provider setup and production launch checklist
+- [x] Add secure rider assignment and delivery job/status flow (delivery_jobs table, rider claim/status UI, admin "Send to delivery")
+- [ ] Verify auth, map, seller, admin and rider flows end-to-end in the hosted preview (needs a signed-in test session)
+- [ ] Complete provider setup and production launch checklist (SMS OTP provider, payments, maps usage limits)
