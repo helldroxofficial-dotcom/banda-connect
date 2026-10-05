@@ -261,17 +261,26 @@ function Admin() {
             <p className="text-[11px] text-muted-foreground">
               {o.area ?? "Banda"} · {new Date(o.created_at).toLocaleString("en-IN")}
             </p>
-            <select
-              value={o.status}
-              onChange={(e) => void setStatus(o.id, e.target.value)}
-              className="mt-1 h-8 rounded-lg bg-muted px-2 text-xs outline-none"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            <div className="mt-1 flex items-center gap-2">
+              <select
+                value={o.status}
+                onChange={(e) => void setStatus(o.id, e.target.value)}
+                className="h-8 rounded-lg bg-muted px-2 text-xs outline-none"
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => void sendToDelivery(o)}
+                className="press rounded-lg bg-primary px-2 py-1.5 text-[10px] font-bold text-primary-foreground"
+              >
+                {t("Send to delivery", "डिलीवरी के लिए भेजें")}
+              </button>
+            </div>
           </div>
         ))}
       </div>
