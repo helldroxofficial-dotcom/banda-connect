@@ -1,9 +1,24 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bike, CheckCircle2 } from "lucide-react";
+import { Bike, CheckCircle2, MapPin, Package } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useApp } from "@/lib/app-store";
+import { useApp, rupees } from "@/lib/app-store";
+
+type Job = {
+  id: string;
+  order_id: string;
+  rider_id: string | null;
+  status: string;
+  area: string | null;
+  address: string | null;
+  payout: number;
+};
+
+const NEXT_STATUS: Record<string, string> = {
+  accepted: "picked_up",
+  picked_up: "delivered",
+};
 
 export const Route = createFileRoute("/delivery")({
   head: () => ({ meta: [
