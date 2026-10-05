@@ -100,8 +100,34 @@ function DeliveryPage() {
     toast.success(t("Application sent for review.", "आवेदन समीक्षा के लिए भेज दिया गया।"));
   };
 
+  const myJobs = jobs.filter((j) => j.rider_id === user?.id && j.status !== "delivered" && j.status !== "cancelled");
+  const openJobs = jobs.filter((j) => j.status === "available" && !j.rider_id);
+
   return <div className="space-y-4">
-    <div className="gradient-hero rounded-3xl p-5 text-primary-foreground"><Bike className="h-7 w-7" /><h1 className="mt-3 text-xl font-black">{t("Become a delivery partner", "डिलीवरी पार्टनर बनें")}</h1><p className="mt-1 text-xs opacity-90">{t("Admin approval and document verification are required before taking jobs.", "काम शुरू करने से पहले एडमिन की मंज़ूरी और दस्तावेज़ सत्यापन ज़रूरी है।")}</p></div>
+    <div className="gradient-hero rounded-3xl p-5 text-primary-foreground"><Bike className="h-7 w-7" /><h1 className="mt-3 text-xl font-black">{isRider ? t("Delivery partner", "डिलीवरी पार्टनर") : t("Become a delivery partner", "डिलीवरी पार्टनर बनें")}</h1><p className="mt-1 text-xs opacity-90">{isRider ? t("Claim open jobs and update delivery status.", "खुले काम स्वीकारें और डिलीवरी स्टेटस अपडेट करें।") : t("Admin approval and document verification are required before taking jobs.", "काम शुरू करने से पहले एडमिन की मंज़ूरी और दस्तावेज़ सत्यापन ज़रूरी है।")}</p></div>
+    {isRider && <div className="surface space-y-2 p-4">
+      <p className="text-sm font-bold">{t("My active jobs", "मेरे चालू काम")}</p>
+      {myJobs.length === 0 && <p className="text-xs text-muted-foreground">{t("No active jobs.", "कोई चालू काम नहीं।")}</p>}
+      {myJobs.map((job) => <div key={job.id} className="rounded-xl bg-muted p-3">
+        <div className="flex items-center justify-between text-xs">
+          <span className="flex items-center gap-1 font-bold"><Package className="h-3.5 w-3.5" /> #{job.order_id.slice(0, 8).toUpperCase()}</span>
+          <span className="font-bold">{rupees(Number(job.payout))}</span>
+        </div>
+        <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="h-3 w-3" /> {job.area ?? "Banda"} · {job.address ?? "—"}</p>
+        <p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground">{job.status}</p>
+        {NEXT_STATUS[job.status] && <button type="button" disabled={jobsBusy} onClick={() => void advanceJob(job)} className="press mt-2 w-full rounded-lg bg-primary py-2 text-xs font-bold text-primary-foreground disabled:opacity-60">{job.status === "accepted" ? t("Mark picked up", "पिक अप करें") : t("Mark delivered", "डिलीवर करें")}</button>}
+      </div>)}
+      <p className="pt-2 text-sm font-bold">{t("Available jobs", "उपलब्ध काम")}</p>
+      {openJobs.length === 0 && <p className="text-xs text-muted-foreground">{t("No open jobs right now.", "अभी कोई खुला काम नहीं।")}</p>}
+      {openJobs.map((job) => <div key={job.id} className="rounded-xl bg-muted p-3">
+        <div className="flex items-center justify-between text-xs">
+          <span className="flex items-center gap-1 font-bold"><Package className="h-3.5 w-3.5" /> #{job.order_id.slice(0, 8).toUpperCase()}</span>
+          <span className="font-bold">{rupees(Number(job.payout))}</span>
+        </div>
+        <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="h-3 w-3" /> {job.area ?? "Banda"}</p>
+        <button type="button" disabled={jobsBusy} onClick={() => void claimJob(job)} className="press mt-2 w-full rounded-lg bg-primary py-2 text-xs font-bold text-primary-foreground disabled:opacity-60">{t("Accept job", "काम स्वीकारें")}</button>
+      </div>)}
+    </div>}
     {sent ? <div className="surface flex items-center gap-3 p-5"><CheckCircle2 className="h-6 w-6 text-primary" /><p className="text-sm font-bold">{t("Application received. The operations team will contact you.", "आवेदन मिल गया। ऑपरेशंस टीम आपसे संपर्क करेगी।")}</p></div> : <div className="surface space-y-2 p-4"><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("Full name", "पूरा नाम")} className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none" /><div className="rounded-xl bg-muted px-3 py-3 text-sm"><p className="font-semibold">{profile?.phone_verified ? profile.phone : t("Mobile number not verified", "मोबाइल नंबर सत्यापित नहीं है")}</p><p className="mt-1 text-xs text-muted-foreground">{profile?.phone_verified ? t("Verified profile number", "प्रोफ़ाइल का सत्यापित नंबर") : t("Verify your number in Profile before applying.", "आवेदन से पहले प्रोफ़ाइल में नंबर सत्यापित करें।")}</p>{!profile?.phone_verified && <Link to="/profile" className="mt-2 inline-flex text-xs font-bold text-primary">{t("Open profile", "प्रोफ़ाइल खोलें")}</Link>}</div><select value={form.vehicle} onChange={(e) => setForm({ ...form, vehicle: e.target.value })} className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"><option value="bike">{t("Motorbike", "मोटरसाइकिल")}</option><option value="cycle">{t("Cycle", "साइकिल")}</option><option value="auto">{t("Auto", "ऑटो")}</option></select><input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} placeholder={t("Service area", "सेवा क्षेत्र")} className="h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none" /><button type="button" disabled={saving || !profile?.phone_verified} onClick={() => void submit()} className="press w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">{saving ? t("Sending…", "भेज रहे हैं…") : t("Apply now", "अभी आवेदन करें")}</button></div>}
   </div>;
 }
