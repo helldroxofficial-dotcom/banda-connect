@@ -85,14 +85,12 @@ function Auth() {
   };
 
   const google = async () => {
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      toast.error(t("Google sign-in needs the hosted preview. Open the shared preview link to continue.", "Google sign-in के लिए hosted preview खोलें और वहीं जारी रखें।"));
-      return;
-    }
     setGoogleBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth`,
+        // Public, same-origin callback; the broker handles preview iframe messaging.
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: "select_account" },
       });
       if (result.error) {
         toast.error(result.error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));

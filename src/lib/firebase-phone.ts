@@ -14,8 +14,16 @@ let verifier: RecaptchaVerifier | null = null;
 let confirmation: ConfirmationResult | null = null;
 
 async function getAuthMod() {
+  if (!cfg.apiKey || !cfg.authDomain || !cfg.projectId) {
+    throw new Error("Firebase Phone Auth is not configured. Add its Firebase web app settings first.");
+  }
   const [{ initializeApp, getApps }, authMod] = await Promise.all([import("firebase/app"), import("firebase/auth")]);
-  const app = getApps()[0] ?? initializeApp(cfg);
+  const app = getApps()[0] ?? initializeApp({
+    apiKey: cfg.apiKey,
+    authDomain: cfg.authDomain,
+    projectId: cfg.projectId,
+    ...(cfg.appId ? { appId: cfg.appId } : {}),
+  });
   return { auth: authMod.getAuth(app), authMod };
 }
 

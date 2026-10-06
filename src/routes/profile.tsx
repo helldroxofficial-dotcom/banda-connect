@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp, rupees } from "@/lib/app-store";
 import { AREAS, FEES } from "@/lib/local-data";
 import { atmRequestsQuery } from "@/lib/queries";
+import { useServerFn } from "@tanstack/react-start";
+import { confirmFirebaseOtp, firebaseEnabled, sendFirebaseOtp } from "@/lib/firebase-phone";
+import { verifyFirebasePhone } from "@/lib/phone-verify.functions";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -27,10 +30,12 @@ function ProfilePage() {
   const { t, user, profile, authReady, isAdmin, signOut, area, setArea, lang, setLang, refreshProfile } = useApp();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const verifyPhoneToken = useServerFn(verifyFirebasePhone);
   const [form, setForm] = useState({ full_name: "", phone: "", address: "" });
   const [saving, setSaving] = useState(false);
   const [phoneCode, setPhoneCode] = useState("");
   const [phonePending, setPhonePending] = useState(false);
+  const [phoneBusy, setPhoneBusy] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [addressVerified, setAddressVerified] = useState(false);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -108,14 +113,21 @@ function ProfilePage() {
       toast.error(t("Enter a valid 10-digit mobile number first.", "पहले सही 10 अंकों का मोबाइल नंबर डालें।"));
       return;
     }
-    const { error } = await supabase.auth.updateUser({ phone: `+91${phone}` });
-    if (error) {
-      toast.error(error.message);
+    if (!firebaseEnabled) {
+      toast.error(t("Phone verification is not configured yet. Add the Firebase web app settings.", "फोन सत्यापन अभी सेट नहीं है। Firebase वेब ऐप सेटिंग जोड़ें।"));
       return;
     }
-    setPhonePending(true);
-    setPhoneVerified(false);
-    toast.success(t("OTP sent to this mobile number.", "इस मोबाइल नंबर पर OTP भेजा गया है।"));
+    setPhoneBusy(true);
+    try {
+      await sendFirebaseOtp(phone, "phone-otp-recaptcha");
+      setPhonePending(true);
+      setPhoneVerified(false);
+      toast.success(t("OTP sent to this mobile number.", "इस मोबाइल नंबर पर OTP भेजा गया है।"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("Could not send the OTP.", "OTP नहीं भेजा जा सका।"));
+    } finally {
+      setPhoneBusy(false);
+    }
   };
 
   const verifyPhoneOtp = async () => {
@@ -124,21 +136,23 @@ function ProfilePage() {
       toast.error(t("Enter the 6-digit OTP.", "6 अंकों का OTP डालें।"));
       return;
     }
-    const { error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: phoneCode, type: "phone_change" });
-    if (error) {
-      toast.error(error.message);
-      return;
+    setPhoneBusy(true);
+    try {
+      const idToken = await confirmFirebaseOtp(phoneCode);
+      const result = await verifyPhoneToken({ data: { idToken } });
+      if (result.phone !== phone) {
+        throw new Error(t("The verified number does not match the number entered.", "सत्यापित नंबर दर्ज किए गए नंबर से मेल नहीं खाता।"));
+      }
+      setPhonePending(false);
+      setPhoneVerified(true);
+      setPhoneCode("");
+      await refreshProfile();
+      toast.success(t("Mobile number verified.", "मोबाइल नंबर सत्यापित हो गया।"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("OTP verification failed.", "OTP सत्यापन असफल हुआ।"));
+    } finally {
+      setPhoneBusy(false);
     }
-    const { error: profileError } = await supabase.from("profiles").update({ phone, phone_verified: true }).eq("id", user?.id ?? "");
-    if (profileError) {
-      toast.error(profileError.message);
-      return;
-    }
-    setPhonePending(false);
-    setPhoneVerified(true);
-    setPhoneCode("");
-    await refreshProfile();
-    toast.success(t("Mobile number verified.", "मोबाइल नंबर सत्यापित हो गया।"));
   };
 
   const verifyLocation = () => {
@@ -242,17 +256,18 @@ function ProfilePage() {
             {phoneVerified ? (
               <span className="flex items-center gap-1 text-xs font-bold text-primary"><CheckCircle2 className="h-4 w-4" /> {t("Phone verified", "फोन सत्यापित")}</span>
             ) : (
-              <button type="button" onClick={() => void sendPhoneOtp()} className="press rounded-xl border border-primary px-3 py-2 text-xs font-bold text-primary">
-                {t("Send OTP", "OTP भेजें")}
+              <button type="button" onClick={() => void sendPhoneOtp()} disabled={phoneBusy} className="press rounded-xl border border-primary px-3 py-2 text-xs font-bold text-primary disabled:opacity-60">
+                {phoneBusy ? t("Please wait…", "रुकिए…") : t("Send OTP", "OTP भेजें")}
               </button>
             )}
             {phonePending && (
               <>
                 <input value={phoneCode} onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder={t("6-digit OTP", "6 अंकों का OTP")} className="h-10 w-32 rounded-xl bg-muted px-3 text-xs outline-none" />
-                <button type="button" onClick={() => void verifyPhoneOtp()} className="press rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">{t("Verify", "सत्यापित करें")}</button>
+                <button type="button" onClick={() => void verifyPhoneOtp()} disabled={phoneBusy} className="press rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground disabled:opacity-60">{t("Verify", "सत्यापित करें")}</button>
               </>
             )}
           </div>
+          <div id="phone-otp-recaptcha" aria-hidden="true" />
           <textarea
             value={form.address}
             onChange={(e) => {

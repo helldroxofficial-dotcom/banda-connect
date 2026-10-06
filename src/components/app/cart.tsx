@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { rupees, useApp } from "@/lib/app-store";
 import { FEES } from "@/lib/local-data";
 import { img } from "@/lib/images";
+import { buildUpiUri, UPI_CONFIG } from "@/lib/payment-config";
 import { QtyButton } from "@/components/app/qty-button";
 
 export function CartBar() {
@@ -45,7 +46,7 @@ export function CartSheet() {
     user,
   } = useApp();
   const [payment, setPayment] = useState<"cod" | "upi" | "wallet">("cod");
-  const [upiId, setUpiId] = useState("");
+  const [upiIntent, setUpiIntent] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -57,10 +58,6 @@ export function CartSheet() {
       setCartOpen(false);
       toast.error(t("Please sign in to place an order", "ऑर्डर करने के लिए साइन इन करें"));
       void navigate({ to: "/auth" });
-      return;
-    }
-    if (payment === "upi" && !/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim())) {
-      toast.error(t("Enter a valid UPI ID (e.g. name@okicici)", "सही UPI ID डालें (जैसे name@okicici)"));
       return;
     }
     setPlacing(true);
@@ -94,6 +91,11 @@ export function CartSheet() {
     setPlacing(false);
     if (error) {
       toast.error(error.message);
+      return;
+    }
+    if (payment === "upi") {
+      setUpiIntent(buildUpiUri(totals.grand, "Banda Bazaar order", data.id));
+      toast.success(t("Order saved. Continue to your UPI app to pay.", "ऑर्डर सेव हो गया। भुगतान के लिए UPI ऐप खोलें।"));
       return;
     }
     clear();
@@ -225,12 +227,9 @@ export function CartSheet() {
                 ))}
               </div>
               {payment === "upi" && (
-                <input
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  placeholder={t("Your UPI ID e.g. 98xxxxxx@ybl", "आपकी UPI ID जैसे 98xxxxxx@ybl")}
-                  className="animate-fade-in mt-2 h-11 w-full rounded-xl bg-muted px-3 text-sm outline-none"
-                />
+                <p className="animate-fade-in mt-2 text-xs text-muted-foreground">
+                  {t(`Pay securely to ${UPI_CONFIG.merchantName} (${UPI_CONFIG.merchantId}) in your UPI app.`, `अपने UPI ऐप में ${UPI_CONFIG.merchantName} (${UPI_CONFIG.merchantId}) को सुरक्षित भुगतान करें।`)}
+                </p>
               )}
             </div>
           </div>
@@ -238,15 +237,29 @@ export function CartSheet() {
 
         {items.length > 0 && (
           <div className="border-t border-border bg-card p-3">
-            <button
-              type="button"
-              disabled={placing}
-              onClick={() => void placeOrder()}
-              className="press flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
-            >
-              <BadgeIndianRupee className="h-5 w-5" />
-              {placing ? t("Placing…", "हो रहा है…") : `${t("Place order", "ऑर्डर करें")} · ${rupees(totals.grand)}`}
-            </button>
+            {upiIntent ? (
+              <a
+                href={upiIntent}
+                onClick={() => {
+                  clear();
+                  setCartOpen(false);
+                }}
+                className="press flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground"
+              >
+                <BadgeIndianRupee className="h-5 w-5" />
+                {t("Continue to UPI app", "UPI ऐप पर जाएं")}
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled={placing}
+                onClick={() => void placeOrder()}
+                className="press flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+              >
+                <BadgeIndianRupee className="h-5 w-5" />
+                {placing ? t("Placing…", "हो रहा है…") : `${t("Place order", "ऑर्डर करें")} · ${rupees(totals.grand)}`}
+              </button>
+            )}
           </div>
         )}
       </div>
