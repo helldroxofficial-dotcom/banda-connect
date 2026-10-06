@@ -215,7 +215,10 @@ export function CartSheet() {
                     key={p.id}
                     type="button"
                     aria-pressed={payment === p.id}
-                    onClick={() => setPayment(p.id)}
+                    onClick={() => {
+                      setPayment(p.id);
+                      setUpiIntent(null);
+                    }}
                     className={`press rounded-xl border p-2 text-xs font-semibold transition-colors ${
                       payment === p.id
                         ? "border-primary bg-primary text-primary-foreground"
@@ -243,6 +246,7 @@ export function CartSheet() {
                 onClick={() => {
                   clear();
                   setCartOpen(false);
+                  setUpiIntent(null);
                 }}
                 className="press flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground"
               >
