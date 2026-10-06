@@ -9,5 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Phone changes use the auth provider's OTP verification, while address verification stores browser geolocation coordinates; this keeps profile trust checks server-backed rather than client-only.
+- Address verification stores browser geolocation coordinates; this keeps location checks tied to device evidence rather than typed text.
 - Seller and delivery applications reuse the existing service_listings workflow until a dedicated operations schema is available; this keeps admin approval server-backed without duplicating public listing data.
+- Firebase phone numbers are trusted only after server-side Firebase ID-token verification; provider configuration remains external so client code never treats typed numbers as verified.
+- Checkout builds merchant UPI intents from a single public configuration module so payment values can change without altering order logic.

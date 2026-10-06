@@ -18,9 +18,9 @@ export const verifyFirebasePhone = createServerFn({ method: "POST" })
       audience: projectId,
     });
     const full = String(payload["phone_number"] ?? "");
-    const m = /^\+91([6-9]\d{9})$/.exec(full);
-    if (!m) throw new Error("Verified number must be an Indian mobile number.");
-    const phone = m[1];
+    const match = /^\+91([6-9]\d{9})$/.exec(full);
+    if (!match || !match[1]) throw new Error("Verified number must be an Indian mobile number.");
+    const phone = match[1];
     const { error } = await context.supabase
       .from("profiles")
       .update({ phone, phone_verified: true })
