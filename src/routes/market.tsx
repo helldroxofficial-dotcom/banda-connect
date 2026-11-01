@@ -32,6 +32,8 @@ export const Route = createFileRoute("/market")({
         property: "og:description",
         content: "Below-MRP grocery, chaat-samosa from famous stalls and nearby shops, delivered in Banda.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Market,

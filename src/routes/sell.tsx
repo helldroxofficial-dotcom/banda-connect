@@ -13,6 +13,8 @@ export const Route = createFileRoute("/sell")({
     { name: "description", content: "Submit your shop, service or local business for review on Banda Bazaar." },
     { property: "og:title", content: "List Your Business — Banda Bazaar" },
     { property: "og:description", content: "Local businesses can submit a listing for admin review." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: SellerPage,
 });

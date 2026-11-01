@@ -34,6 +34,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Groceries, street food, trusted workers, doctors, rooms and tutors across Banda, UP.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Home,

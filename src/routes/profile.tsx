@@ -21,6 +21,8 @@ export const Route = createFileRoute("/profile")({
       },
       { property: "og:title", content: "My Profile — Banda Bazaar" },
       { property: "og:description", content: "Profile, wallet balance and Mini-ATM cash delivery in Banda." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ProfilePage,
