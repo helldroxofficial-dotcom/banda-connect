@@ -21,6 +21,8 @@ export const Route = createFileRoute("/orders")({
       },
       { property: "og:title", content: "My Orders — Banda Bazaar" },
       { property: "og:description", content: "Live order tracking and 7-day warranty support for every Banda Bazaar order." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Orders,

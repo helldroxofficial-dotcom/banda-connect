@@ -73,6 +73,8 @@ export const Route = createFileRoute("/services")({
         property: "og:description",
         content: "Fixed-rate local services with ratings, home visits and a demand board for anything else.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Services,

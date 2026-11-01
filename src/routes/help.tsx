@@ -14,6 +14,8 @@ export const Route = createFileRoute("/help")({
       },
       { property: "og:title", content: "Banda Bazaar Help & Policies" },
       { property: "og:description", content: "Delivery fees, 7-day warranty, Mini-ATM and stall pickup explained." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Help,
