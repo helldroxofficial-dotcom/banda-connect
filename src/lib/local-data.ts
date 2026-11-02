@@ -523,3 +523,145 @@ export const shopMenus: Record<string, ShopItem[]> = {
     { id: "sh3-notes", name: "UP Board Exam Notes", hindi: "यूपी बोर्ड एग्ज़ाम नोट्स", price: 220, mrp: 260, unit: "1 set", unitHindi: "1 सेट", imageKey: "grocery-tea" },
   ],
 };
+
+// ================= Food Club / Banda Market / Banda Runner =================
+
+/** Food Club extra fees on top of item prices. Street food keeps FEES.streetDelivery/stallPickupExtra. */
+export const FOOD_FEES = {
+  /** Flat platform fee charged when a Food Club cart has premium restaurant items. */
+  platformFee: 9,
+  /** Flat delivery for premium restaurant orders. */
+  restaurantDelivery: 29,
+};
+
+export type RunnerStep = {
+  /** "pickup" | "drop" | "errand" */
+  type: "pickup" | "drop" | "errand";
+  address: string;
+  note: string;
+  /** km from the previous point (0 for the first step). */
+  km: number;
+};
+
+export const RUNNER_FEES = {
+  baseFee: 25,
+  perKm: 12,
+  /** Free stops included; every extra step beyond 2 costs this much. */
+  freeStopCount: 2,
+  extraStop: 10,
+  minFee: 40,
+};
+
+export function runnerQuote(steps: RunnerStep[]) {
+  if (steps.length === 0) return { totalKm: 0, fee: 0, extraStopFee: 0 };
+  const totalKm = steps.reduce((s, x) => s + Math.max(0, Number(x.km) || 0), 0);
+  const extraStopFee = Math.max(0, steps.length - RUNNER_FEES.freeStopCount) * RUNNER_FEES.extraStop;
+  const fee = Math.max(RUNNER_FEES.minFee, Math.round(RUNNER_FEES.baseFee + totalKm * RUNNER_FEES.perKm + extraStopFee));
+  return { totalKm, fee, extraStopFee };
+}
+
+export type DeliverySlot = {
+  id: "instant" | "evening" | "tomorrow";
+  en: string;
+  hi: string;
+  subEn: string;
+  subHi: string;
+};
+
+/** Market checkout slots. "instant" = immediate express; others consolidate the whole Market cart into ONE delivery. */
+export const deliverySlots: DeliverySlot[] = [
+  { id: "instant", en: "Instant Express (15 min)", hi: "तुरंत एक्सप्रेस (15 मिनट)", subEn: "Immediate dispatch · express charge", subHi: "तुरंत रवाना · एक्सप्रेस चार्ज" },
+  { id: "evening", en: "Evening Batch (4-8 PM)", hi: "शाम की बैच (4-8 बजे)", subEn: "All shops combined · ONE delivery", subHi: "सभी दुकानें एक साथ · एक ही डिलीवरी" },
+  { id: "tomorrow", en: "Tomorrow Morning", hi: "कल सुबह", subEn: "All shops combined · ONE delivery", subHi: "सभी दुकानें एक साथ · एक ही डिलीवरी" },
+];
+
+/** Loose, open-measured grocery (per-kg pricing with custom weight). */
+export type LooseItem = {
+  id: string;
+  name: string;
+  hindi: string;
+  perKg: number;
+  mrpPerKg?: number;
+  imageKey: string;
+  minGrams: number;
+  maxGrams: number;
+  stepGrams: number;
+  category: "oils-ghee" | "rice-dal" | "tea-sugar" | "atta";
+};
+
+export const looseItems: LooseItem[] = [
+  { id: "loose-mustard", name: "Mustard Oil (loose)", hindi: "खुला सरसों तेल", perKg: 155, mrpPerKg: 185, imageKey: "grocery-mustard-oil", minGrams: 250, maxGrams: 5000, stepGrams: 250, category: "oils-ghee" },
+  { id: "loose-ghee", name: "Desi Ghee (loose)", hindi: "खुला देसी घी", perKg: 640, mrpPerKg: 720, imageKey: "grocery-ghee", minGrams: 250, maxGrams: 5000, stepGrams: 250, category: "oils-ghee" },
+  { id: "loose-arhar", name: "Arhar Dal (loose)", hindi: "खुली अरहर दाल", perKg: 148, mrpPerKg: 175, imageKey: "grocery-pulses", minGrams: 250, maxGrams: 10000, stepGrams: 250, category: "rice-dal" },
+  { id: "loose-chana", name: "Chana Dal (loose)", hindi: "खुली चना दाल", perKg: 92, mrpPerKg: 110, imageKey: "grocery-pulses", minGrams: 250, maxGrams: 10000, stepGrams: 250, category: "rice-dal" },
+  { id: "loose-rice", name: "Loose Rice", hindi: "खुला चावल", perKg: 58, mrpPerKg: 65, imageKey: "grocery-rice", minGrams: 250, maxGrams: 10000, stepGrams: 500, category: "rice-dal" },
+  { id: "loose-sugar", name: "Loose Sugar (Cheeni)", hindi: "खुली चीनी", perKg: 44, mrpPerKg: 48, imageKey: "grocery-sugar", minGrams: 250, maxGrams: 10000, stepGrams: 500, category: "tea-sugar" },
+  { id: "loose-atta", name: "Loose Atta (Chakki)", hindi: "खुला आटा", perKg: 38, mrpPerKg: 45, imageKey: "grocery-atta", minGrams: 1000, maxGrams: 10000, stepGrams: 500, category: "atta" },
+];
+
+export type RestaurantDish = {
+  id: string;
+  name: string;
+  hindi: string;
+  price: number;
+  veg: boolean;
+  desc: string;
+  imageKey: string;
+  bestseller?: boolean;
+};
+
+export type Restaurant = {
+  id: string;
+  name: string;
+  nameHindi: string;
+  cuisine: string;
+  cuisineHindi: string;
+  location: string;
+  locationHindi: string;
+  rating: number;
+  eta: string;
+  imageKey: string;
+  pureVeg: boolean;
+  menu: RestaurantDish[];
+};
+
+export const restaurants: Restaurant[] = [
+  {
+    id: "rest-anand",
+    name: "Anand Family Restaurant",
+    nameHindi: "आनंद फैमिली रेस्टोरेंट",
+    cuisine: "North Indian • Thali • Sweets",
+    cuisineHindi: "नॉर्थ इंडियन • थाली • मिठाई",
+    location: "Station Road, Banda",
+    locationHindi: "स्टेशन रोड, बांदा",
+    rating: 4.6,
+    eta: "30-40 min",
+    imageKey: "restaurant-anand",
+    pureVeg: true,
+    menu: [
+      { id: "anand-thali", name: "Special Veg Thali", hindi: "स्पेशल वेज थाली", price: 180, veg: true, desc: "Paneer, dal, rice, 2 naan, salad, sweet.", imageKey: "restaurant-anand", bestseller: true },
+      { id: "anand-paneer", name: "Shahi Paneer + 2 Naan", hindi: "शाही पनीर + 2 नान", price: 220, veg: true, desc: "Creamy cashew paneer gravy.", imageKey: "restaurant-anand" },
+      { id: "anand-dal", name: "Dal Tadka + Jeera Rice", hindi: "दाल तड़का + जीरा राइस", price: 150, veg: true, desc: "Ghee tadka dal with jeera rice.", imageKey: "restaurant-anand" },
+      { id: "anand-chole", name: "Chole Bhature (2 pc)", hindi: "छोले भटूरे (2 पीस)", price: 110, veg: true, desc: "Fluffy bhature with amritsari chole.", imageKey: "restaurant-anand" },
+    ],
+  },
+  {
+    id: "rest-zaika",
+    name: "Zaika Kitchen",
+    nameHindi: "ज़ायका किचन",
+    cuisine: "Biryani • Indo-Chinese",
+    cuisineHindi: "बिरयानी • इंडो-चाइनीज़",
+    location: "Civil Lines, Banda",
+    locationHindi: "सिविल लाइंस, बांदा",
+    rating: 4.7,
+    eta: "35-45 min",
+    imageKey: "restaurant-zaika",
+    pureVeg: false,
+    menu: [
+      { id: "zaika-chicken-biryani", name: "Chicken Biryani", hindi: "चिकन बिरयानी", price: 189, veg: false, desc: "Handi biryani with raita and egg.", imageKey: "restaurant-zaika", bestseller: true },
+      { id: "zaika-paneer-biryani", name: "Paneer Biryani", hindi: "पनीर बिरयानी", price: 169, veg: true, desc: "Dum paneer biryani with raita.", imageKey: "restaurant-zaika" },
+      { id: "zaika-noodles", name: "Hakka Veg Noodles", hindi: "हक्का वेज नूडल्स", price: 110, veg: true, desc: "Wok-tossed noodles with veggies.", imageKey: "restaurant-zaika" },
+      { id: "zaika-chilli-paneer", name: "Chilli Paneer (dry)", hindi: "चिली पनीर (ड्राई)", price: 190, veg: true, desc: "Spicy chilli-garlic paneer.", imageKey: "restaurant-zaika" },
+    ],
+  },
+];
