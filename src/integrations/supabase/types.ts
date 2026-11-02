@@ -38,6 +38,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          active: boolean
+          applies_to: string
+          code: string
+          created_at: string
+          description_en: string
+          description_hi: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_discount: number | null
+          merchant_name: string | null
+          min_order: number
+        }
+        Insert: {
+          active?: boolean
+          applies_to?: string
+          code: string
+          created_at?: string
+          description_en?: string
+          description_hi?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_discount?: number | null
+          merchant_name?: string | null
+          min_order?: number
+        }
+        Update: {
+          active?: boolean
+          applies_to?: string
+          code?: string
+          created_at?: string
+          description_en?: string
+          description_hi?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_discount?: number | null
+          merchant_name?: string | null
+          min_order?: number
+        }
+        Relationships: []
+      }
       delivery_jobs: {
         Row: {
           address: string | null
@@ -158,16 +206,22 @@ export type Database = {
         Row: {
           address: string | null
           area: string | null
+          coupon_code: string | null
           created_at: string
           delivery_fee: number
+          delivery_slot: string | null
+          discount: number
           id: string
           item_total: number
           items: Json
           packaging_fee: number
           payment_method: string
+          platform_fee: number
           rating: number | null
           rider_name: string | null
+          runner_details: Json | null
           savings: number
+          section: string
           status: string
           total: number
           user_id: string
@@ -175,16 +229,22 @@ export type Database = {
         Insert: {
           address?: string | null
           area?: string | null
+          coupon_code?: string | null
           created_at?: string
           delivery_fee?: number
+          delivery_slot?: string | null
+          discount?: number
           id?: string
           item_total?: number
           items?: Json
           packaging_fee?: number
           payment_method?: string
+          platform_fee?: number
           rating?: number | null
           rider_name?: string | null
+          runner_details?: Json | null
           savings?: number
+          section?: string
           status?: string
           total?: number
           user_id: string
@@ -192,16 +252,22 @@ export type Database = {
         Update: {
           address?: string | null
           area?: string | null
+          coupon_code?: string | null
           created_at?: string
           delivery_fee?: number
+          delivery_slot?: string | null
+          discount?: number
           id?: string
           item_total?: number
           items?: Json
           packaging_fee?: number
           payment_method?: string
+          platform_fee?: number
           rating?: number | null
           rider_name?: string | null
+          runner_details?: Json | null
           savings?: number
+          section?: string
           status?: string
           total?: number
           user_id?: string

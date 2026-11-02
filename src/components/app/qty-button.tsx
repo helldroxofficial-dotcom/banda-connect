@@ -1,8 +1,18 @@
 import { Minus, Plus } from "lucide-react";
-import { useApp, type CartItem } from "@/lib/app-store";
+import { useApp, type CartItem, type Section } from "@/lib/app-store";
 
-export function QtyButton({ item, size = "md" }: { item: Omit<CartItem, "qty">; size?: "sm" | "md" }) {
-  const { qtyOf, add, dec, t } = useApp();
+export function QtyButton({
+  item,
+  size = "md",
+  section = "market",
+}: {
+  item: Omit<CartItem, "qty">;
+  size?: "sm" | "md";
+  section?: Section;
+}) {
+  const app = useApp();
+  const cart = app[section];
+  const { qtyOf, add, dec, t } = cart;
   const qty = qtyOf(item.id);
   const min = Math.max(1, item.minQty ?? 1);
   const pad = size === "sm" ? "h-8 text-[11px]" : "h-9 text-sm";

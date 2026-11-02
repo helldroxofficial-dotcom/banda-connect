@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793627715154,
+      "tag": "0000_sections_coupons_and_order_tracking",
+      "breakpoints": true
+    }
+  ]
+}
