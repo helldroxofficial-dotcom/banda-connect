@@ -2,8 +2,9 @@ import { img } from "@/lib/images";
 import { rupees, useApp } from "@/lib/app-store";
 import { QtyButton } from "@/components/app/qty-button";
 import type { Product } from "@/lib/queries";
+import type { Section } from "@/lib/app-store";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, section = "market" }: { product: Product; section?: Section }) {
   const { lang } = useApp();
   const mrp = product.mrp ? Number(product.mrp) : null;
   const price = Number(product.price);
@@ -47,6 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="pt-1.5">
           <QtyButton
             size="sm"
+            section={section}
             item={{
               id: product.id,
               name: product.name,

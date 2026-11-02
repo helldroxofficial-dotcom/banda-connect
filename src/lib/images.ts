@@ -28,6 +28,9 @@ import doctor2 from "@/assets/doctor-2.jpg";
 import skillRepair from "@/assets/skill-repair.jpg";
 import skillPhotographer from "@/assets/skill-photographer.jpg";
 import skillDeveloper from "@/assets/skill-developer.jpg";
+import restaurantAnand from "@/assets/restaurant-anand.jpg";
+import restaurantZaika from "@/assets/restaurant-zaika.jpg";
+import runner from "@/assets/runner.jpg";
 
 export const IMAGES: Record<string, string> = {
   "grocery-atta": atta,
@@ -60,6 +63,9 @@ export const IMAGES: Record<string, string> = {
   "skill-repair": skillRepair,
   "skill-photographer": skillPhotographer,
   "skill-developer": skillDeveloper,
+  "restaurant-anand": restaurantAnand,
+  "restaurant-zaika": restaurantZaika,
+  "runner": runner,
 };
 
 export function img(key: string | null | undefined): string {
