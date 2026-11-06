@@ -14,11 +14,13 @@ import { AREAS, pros, shops, skills, stalls } from "@/lib/local-data";
 import { productsQuery } from "@/lib/queries";
 import { img } from "@/lib/images";
 import { QtyButton } from "@/components/app/qty-button";
+import { useCartCount } from "@/components/app/cart";
 
 type Hit = { id: string; title: string; sub: string; image: string; to: string };
 
 export function AppHeader() {
-  const { area, setArea, lang, setLang, t, totals, setCartOpen } = useApp();
+  const { area, setArea, lang, setLang, t, setCartOpen } = useApp();
+  const totals = { count: useCartCount() };
   const [areaOpen, setAreaOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -31,20 +33,50 @@ export function AppHeader() {
     const out: Hit[] = [];
     for (const p of products) {
       if (`${p.name} ${p.hindi ?? ""}`.toLowerCase().includes(term))
-        out.push({ id: p.id, title: p.name, sub: `Grocery • ₹${p.price}`, image: img(p.image_key), to: "/market" });
+        out.push({
+          id: p.id,
+          title: p.name,
+          sub: `Grocery • ₹${p.price}`,
+          image: img(p.image_key),
+          to: "/market",
+        });
     }
     for (const s of stalls)
       if (`${s.name} ${s.vendor}`.toLowerCase().includes(term))
-        out.push({ id: s.id, title: s.name, sub: `Local Bites • ${s.vendor}`, image: img(s.imageKey), to: "/market" });
+        out.push({
+          id: s.id,
+          title: s.name,
+          sub: `Local Bites • ${s.vendor}`,
+          image: img(s.imageKey),
+          to: "/market",
+        });
     for (const s of shops)
       if (`${s.name} ${s.tags}`.toLowerCase().includes(term))
-        out.push({ id: s.id, title: s.name, sub: `Shop • ${s.location}`, image: img(s.imageKey), to: "/market" });
+        out.push({
+          id: s.id,
+          title: s.name,
+          sub: `Shop • ${s.location}`,
+          image: img(s.imageKey),
+          to: "/market",
+        });
     for (const p of pros)
       if (`${p.name} ${p.trade}`.toLowerCase().includes(term))
-        out.push({ id: p.id, title: p.name, sub: `Service • ${p.trade}`, image: img(p.imageKey), to: "/services" });
+        out.push({
+          id: p.id,
+          title: p.name,
+          sub: `Service • ${p.trade}`,
+          image: img(p.imageKey),
+          to: "/services",
+        });
     for (const s of skills)
       if (`${s.name} ${s.service}`.toLowerCase().includes(term))
-        out.push({ id: s.id, title: s.name, sub: `Skill • ${s.tag}`, image: img(s.imageKey), to: "/services" });
+        out.push({
+          id: s.id,
+          title: s.name,
+          sub: `Skill • ${s.tag}`,
+          image: img(s.imageKey),
+          to: "/services",
+        });
     return out.slice(0, 8);
   }, [q, products]);
 
@@ -130,14 +162,21 @@ export function AppHeader() {
           )}
         </div>
 
-
         {hits.length > 0 && (
           <div className="animate-fade-in mt-2 overflow-hidden rounded-xl bg-card text-foreground shadow-card">
             {hits.map((h) => {
               const p = productById(h.id);
               return (
-                <div key={h.id} className="flex items-center gap-3 border-b border-border p-2 last:border-0">
-                  <img src={h.image} alt="" loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
+                <div
+                  key={h.id}
+                  className="flex items-center gap-3 border-b border-border p-2 last:border-0"
+                >
+                  <img
+                    src={h.image}
+                    alt=""
+                    loading="lazy"
+                    className="h-10 w-10 rounded-lg object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => {
@@ -176,7 +215,9 @@ export function AppHeader() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>{t("Choose your area", "अपना एरिया चुनें")}</DialogTitle>
-            <DialogDescription>{t("We deliver across Banda city", "हम पूरे बांदा शहर में डिलीवर करते हैं")}</DialogDescription>
+            <DialogDescription>
+              {t("We deliver across Banda city", "हम पूरे बांदा शहर में डिलीवर करते हैं")}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
             {AREAS.map((a) => (
@@ -188,7 +229,9 @@ export function AppHeader() {
                   setAreaOpen(false);
                 }}
                 className={`press flex items-center justify-between rounded-xl border p-3 text-left text-sm ${
-                  a === area ? "border-primary bg-primary-soft font-bold text-accent-foreground" : "border-border"
+                  a === area
+                    ? "border-primary bg-primary-soft font-bold text-accent-foreground"
+                    : "border-border"
                 }`}
               >
                 <span>{a}, Banda</span>
@@ -206,13 +249,22 @@ export function AppHeader() {
           </DialogHeader>
           <ul className="space-y-2 text-sm">
             <li className="rounded-xl bg-primary-soft p-3 text-accent-foreground">
-              🎉 {t("Free delivery on orders above ₹149 today.", "आज ₹149 से ऊपर के ऑर्डर पर फ्री डिलीवरी।")}
+              🎉{" "}
+              {t(
+                "Free delivery on orders above ₹149 today.",
+                "आज ₹149 से ऊपर के ऑर्डर पर फ्री डिलीवरी।",
+              )}
             </li>
             <li className="rounded-xl bg-muted p-3">
-              🛵 {t("New: Live Stall Pickup from Kalu Kuan chaat corner.", "नया: कालू कुआँ चाट कॉर्नर से लाइव स्टॉल पिकअप।")}
+              🛵{" "}
+              {t(
+                "New: Live Stall Pickup from Kalu Kuan chaat corner.",
+                "नया: कालू कुआँ चाट कॉर्नर से लाइव स्टॉल पिकअप।",
+              )}
             </li>
             <li className="rounded-xl bg-muted p-3">
-              💵 {t("Mini-ATM cash at home now up to ₹5,000.", "मिनी-एटीएम घर पर कैश अब ₹5,000 तक।")}
+              💵{" "}
+              {t("Mini-ATM cash at home now up to ₹5,000.", "मिनी-एटीएम घर पर कैश अब ₹5,000 तक।")}
             </li>
           </ul>
         </DialogContent>
