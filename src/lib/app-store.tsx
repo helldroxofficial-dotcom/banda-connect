@@ -146,6 +146,47 @@ function lineTotal(item: CartItem): number {
   return linePrice(item) * item.qty;
 }
 
+function calculateTotals(
+  section: Section,
+  items: CartItem[],
+  applied: AppliedCoupon | null,
+  marketSlot: "instant" | "evening" | "tomorrow",
+): SectionTotals {
+  const count = items.reduce((s, i) => s + i.qty, 0);
+  const itemTotal = items.reduce((s, i) => s + lineTotal(i), 0);
+  const savings = items.reduce((s, i) => s + Math.max(0, (i.mrp ?? i.price) - linePrice(i)) * i.qty, 0);
+
+  if (section === "food") {
+    const streetTotal = items.filter((i) => i.kind === "street").reduce((s, i) => s + lineTotal(i), 0);
+    const restaurantTotal = items.filter((i) => i.kind === "restaurant").reduce((s, i) => s + lineTotal(i), 0);
+    const platformFee = restaurantTotal > 0 ? FOOD_FEES.platformFee : 0;
+    const delivery = (streetTotal > 0 ? FEES.streetDelivery : 0) + (restaurantTotal > 0 ? FOOD_FEES.restaurantDelivery : 0);
+    const stallCharge = items.some((i) => i.stallId) ? FEES.stallPickupExtra : 0;
+    const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
+    return {
+      ...emptyTotals, count, itemTotal, savings, delivery, stallCharge, platformFee, discount,
+      grand: Math.max(0, itemTotal + platformFee + delivery + stallCharge - discount),
+    };
+  }
+
+  if (section === "market") {
+    const hasPackaged = items.some((i) => !i.loose);
+    const packaging = hasPackaged ? FEES.packaging : 0;
+    const base = itemTotal >= FEES.freeDeliveryAbove ? 0 : itemTotal < FEES.smallOrderBelow ? FEES.smallOrderFee : FEES.standardFee;
+    const delivery = base;
+    const expressFee = marketSlot === "instant" && itemTotal > 0 ? FEES.expressFee : 0;
+    const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
+    return {
+      ...emptyTotals, count, itemTotal, savings, packaging, delivery, expressFee, discount,
+      deliverySaved: base === 0 ? FEES.standardFee : 0,
+      grand: Math.max(0, itemTotal + packaging + delivery + expressFee - discount),
+    };
+  }
+
+  const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
+  return { ...emptyTotals, count, itemTotal, savings, discount, grand: Math.max(0, itemTotal - discount) };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [cartsState, setCartsState] = useState<Record<Section, CartItem[]>>({ food: [], market: [], services: [] });
   const [coupons, setCoupons] = useState<Record<Section, AppliedCoupon | null>>({ food: null, market: null, services: null });
@@ -303,45 +344,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (section: Section): SectionCart => {
       const items = cartsState[section];
       const applied = coupons[section];
-      const totals = useMemo<SectionTotals>(() => {
-        const count = items.reduce((s, i) => s + i.qty, 0);
-        const itemTotal = items.reduce((s, i) => s + lineTotal(i), 0);
-        const savings = items.reduce((s, i) => s + Math.max(0, (i.mrp ?? i.price) - linePrice(i)) * i.qty, 0);
-
-        if (section === "food") {
-          const streetTotal = items.filter((i) => i.kind === "street").reduce((s, i) => s + lineTotal(i), 0);
-          const restaurantTotal = items.filter((i) => i.kind === "restaurant").reduce((s, i) => s + lineTotal(i), 0);
-          const platformFee = restaurantTotal > 0 ? FOOD_FEES.platformFee : 0;
-          const delivery = (streetTotal > 0 ? FEES.streetDelivery : 0) + (restaurantTotal > 0 ? FOOD_FEES.restaurantDelivery : 0);
-          const stallCharge = items.some((i) => i.stallId) ? FEES.stallPickupExtra : 0;
-          const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
-          return {
-            ...emptyTotals, count, itemTotal, savings, delivery, stallCharge, platformFee, discount,
-            grand: Math.max(0, itemTotal + platformFee + delivery + stallCharge - discount),
-          };
-        }
-
-        if (section === "market") {
-          const hasPackaged = items.some((i) => !i.loose);
-          const packaging = hasPackaged ? FEES.packaging : 0;
-          const base = itemTotal >= FEES.freeDeliveryAbove ? 0 : itemTotal < FEES.smallOrderBelow ? FEES.smallOrderFee : FEES.standardFee;
-          const delivery = base;
-          const expressFee = marketSlot === "instant" && itemTotal > 0 ? FEES.expressFee : 0;
-          const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
-          return {
-            ...emptyTotals, count, itemTotal, savings, packaging, delivery, expressFee, discount,
-            deliverySaved: base === 0 ? FEES.standardFee : 0,
-            grand: Math.max(0, itemTotal + packaging + delivery + expressFee - discount),
-          };
-        }
-
-        // services: runner tasks + visit bookings, no delivery fee
-        const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
-        return {
-          ...emptyTotals, count, itemTotal, savings, discount,
-          grand: Math.max(0, itemTotal - discount),
-        };
-      }, [items, section, applied, marketSlot]);
+      const totals = calculateTotals(section, items, applied, marketSlot);
 
       return {
         items,
