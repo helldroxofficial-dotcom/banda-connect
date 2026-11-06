@@ -1,4 +1,5 @@
-import { createServerFn, getRequestHeader } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamObject, streamText, jsonSchema } from "ai";
 import { createClient } from "@supabase/supabase-js";
@@ -222,7 +223,7 @@ Return only through the JSON schema.`;
       },
     });
 
-    const runIdFetch = createLovableAiGatewayRunIdFetch(getIncomingRunId(getRequestHeader()));
+    const runIdFetch = createLovableAiGatewayRunIdFetch(getIncomingRunId(getRequest()));
     const provider = createOpenAI({
       baseURL: LOVABLE_GATEWAY_URL,
       apiKey,
