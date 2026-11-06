@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useApp } from "@/lib/app-store";
 
 export const Route = createFileRoute("/auth")({
@@ -87,17 +86,25 @@ function Auth() {
   const google = async () => {
     setGoogleBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        // Public, same-origin callback; the broker handles preview iframe messaging.
-        redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
+      // Google refuses to render inside iframes (e.g. the v0 preview), so open it in a new tab there.
+      const inIframe = window.self !== window.top;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            prompt: "select_account",
+          },
+          skipBrowserRedirect: inIframe,
+        },
       });
-      if (result.error) {
-        toast.error(result.error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));
+      if (error) {
+        toast.error(error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));
         return;
       }
-      if (result.redirected) return;
-      void navigate({ to: "/" });
+      if (inIframe && data.url) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("Google sign-in failed.", "Google sign-in असफल रहा।"));
     } finally {
