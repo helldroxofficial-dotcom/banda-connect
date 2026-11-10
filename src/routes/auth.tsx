@@ -93,18 +93,10 @@ function Auth() {
           queryParams: {
             prompt: "select_account",
           },
-          // Retrieve the provider URL so an embedded preview can redirect its top-level page.
-          skipBrowserRedirect: true,
         },
       });
       if (error) {
         toast.error(error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));
-        return;
-      }
-      if (data.url) {
-        (window.top ?? window).location.assign(data.url);
-      } else {
-        toast.error(t("Google sign-in could not be started.", "Google sign-in शुरू नहीं हो सका।"));
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("Google sign-in failed.", "Google sign-in असफल रहा।"));
