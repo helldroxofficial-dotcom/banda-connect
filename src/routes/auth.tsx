@@ -86,24 +86,17 @@ function Auth() {
   const google = async () => {
     setGoogleBusy(true);
     try {
-      // Google refuses to render inside iframes (e.g. the v0 preview), so open it in a new tab there.
-      const inIframe = window.self !== window.top;
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/`,
           queryParams: {
             prompt: "select_account",
           },
-          skipBrowserRedirect: inIframe,
         },
       });
       if (error) {
         toast.error(error.message ?? t("Google sign-in is unavailable right now.", "Google sign-in अभी उपलब्ध नहीं है।"));
-        return;
-      }
-      if (inIframe && data.url) {
-        window.open(data.url, "_blank", "noopener,noreferrer");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("Google sign-in failed.", "Google sign-in असफल रहा।"));
