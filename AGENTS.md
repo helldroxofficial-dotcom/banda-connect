@@ -13,3 +13,6 @@
 - Seller and delivery applications reuse the existing service_listings workflow until a dedicated operations schema is available; this keeps admin approval server-backed without duplicating public listing data.
 - Firebase phone numbers are trusted only after server-side Firebase ID-token verification; provider configuration remains external so client code never treats typed numbers as verified.
 - Checkout builds merchant UPI intents from a single public configuration module so payment values can change without altering order logic.
+- Keep Food, Market and Services as independent cart/checkout sections so items and fees remain unambiguous.
+- Keep speech recognition behind user interaction with typed-command fallback because browser microphone support varies by device.
+- Runner quotes use explicitly entered leg distances until a routing provider is configured, keeping prices transparent and deterministic.
