@@ -9,6 +9,11 @@
 - [x] Add configurable merchant UPI intent handoff in checkout
 - [x] Add Firebase phone OTP client flow and server-side ID-token verification
 - [x] Keep Google sign-in brokered, use a public same-origin return URL and request account selection
+- [ ] Build Food Club page with street stalls, 99-store listings, premium restaurants and its own cart
+- [ ] Add multi-stop Banda Runner task builder with transparent distance-based pricing
+- [ ] Add loose Market item weight controls with live weight-based pricing
+- [ ] Connect Banda Mitra voice input and shopping commands to food/market carts
+- [ ] Finish Market combined delivery slots, single delivery fee, per-item express and coupon checkout behavior
 - [ ] Configure Firebase project settings and authorized domains; verify SMS eligibility and pricing
 - [ ] Verify auth, map, seller, admin and rider flows end-to-end in the hosted preview (needs a signed-in test session)
 - [ ] Complete provider setup and production launch checklist (SMS OTP provider, payments, maps usage limits)
