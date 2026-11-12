@@ -48,7 +48,7 @@ function Home() {
 
   const actions = [
     { to: "/market", search: { tab: "grocery" }, icon: ShoppingBasket, label: t("Grocery", "किराना"), sub: "15 min" },
-    { to: "/market", search: { tab: "bites" }, icon: UtensilsCrossed, label: t("Local Bites", "लोकल बाइट्स"), sub: t("Street food", "चाट-समोसा") },
+    { to: "/food", search: {}, icon: UtensilsCrossed, label: t("Food Club", "फूड क्लब"), sub: t("Street food & restaurants", "स्ट्रीट फूड और रेस्टोरेंट") },
     { to: "/market", search: { tab: "shops" }, icon: Store, label: t("Shops", "दुकानें"), sub: t("Nearby", "पास की") },
     { to: "/services", search: { tab: "workers" }, icon: Wrench, label: t("Workers", "मिस्त्री"), sub: t("Verified", "वेरिफाइड") },
     { to: "/services", search: { tab: "health" }, icon: HeartPulse, label: t("Health", "स्वास्थ्य"), sub: t("Doctors", "डॉक्टर") },
@@ -135,7 +135,7 @@ function Home() {
       <section>
         <div className="mb-3 flex items-end justify-between">
           <h2 className="section-title">{t("Famous Banda street food", "बांदा का मशहूर स्ट्रीट फूड")}</h2>
-          <Link to="/market" search={{ tab: "bites" }} className="text-xs font-extrabold text-primary">
+          <Link to="/food" className="text-xs font-extrabold text-primary">
             {t("See all", "सभी देखें")} →
           </Link>
         </div>
@@ -143,8 +143,7 @@ function Home() {
           {stalls.map((s) => (
             <Link
               key={s.id}
-              to="/market"
-              search={{ tab: "bites", stall: s.id }}
+              to="/food"
               className="surface hover-lift press w-44 shrink-0 overflow-hidden p-0"
             >
               <div className="relative overflow-hidden">
