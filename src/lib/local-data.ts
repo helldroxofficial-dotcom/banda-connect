@@ -570,7 +570,6 @@ export type DeliverySlot = {
 
 /** Market checkout slots. "instant" = immediate express; others consolidate the whole Market cart into ONE delivery. */
 export const deliverySlots: DeliverySlot[] = [
-  { id: "instant", en: "Instant Express (15 min)", hi: "तुरंत एक्सप्रेस (15 मिनट)", subEn: "Immediate dispatch · express charge", subHi: "तुरंत रवाना · एक्सप्रेस चार्ज" },
   { id: "evening", en: "Evening Batch (4-8 PM)", hi: "शाम की बैच (4-8 बजे)", subEn: "All shops combined · ONE delivery", subHi: "सभी दुकानें एक साथ · एक ही डिलीवरी" },
   { id: "tomorrow", en: "Tomorrow Morning", hi: "कल सुबह", subEn: "All shops combined · ONE delivery", subHi: "सभी दुकानें एक साथ · एक ही डिलीवरी" },
 ];

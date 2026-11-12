@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BadgeIndianRupee, ShieldCheck, ShoppingBag, Tag, Timer, Trash2, X } from "lucide-react";
+import { BadgeIndianRupee, Clock3, ShieldCheck, ShoppingBag, Tag, Timer, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { computeCouponDiscount, rupees, useApp, type Section } from "@/lib/app-store";
-import { deliverySlots, FEES } from "@/lib/local-data";
+import { deliverySlots, FEES, looseItems } from "@/lib/local-data";
 import { img } from "@/lib/images";
 import { buildUpiUri, UPI_CONFIG } from "@/lib/payment-config";
 import { QtyButton } from "@/components/app/qty-button";
+import { LooseWeightControl } from "@/components/app/loose-weight-control";
+import { Button } from "@/components/ui/button";
 
 const SECTIONS: Section[] = ["market", "food", "services"];
 
@@ -120,7 +122,7 @@ export function CartSheet() {
 function SectionCheckout({ section }: { section: Section }) {
   const { carts, setCartOpen, t, area, profile, user, marketSlot, setMarketSlot } = useApp();
   const cart = carts[section];
-  const { items, totals, remove, clear, coupon, setCoupon } = cart;
+  const { items, totals, remove, clear, coupon, setCoupon, toggleExpress } = cart;
   const [payment, setPayment] = useState<"cod" | "upi" | "wallet">("cod");
   const [upiIntent, setUpiIntent] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
@@ -204,6 +206,9 @@ function SectionCheckout({ section }: { section: Section }) {
           kind: i.kind ?? "grocery",
           stall_name: i.stallName ?? null,
           restaurant_name: i.restaurantName ?? null,
+          express_delivery: i.expressDelivery ?? false,
+          runner: i.runner ?? null,
+          loose: i.loose ?? null,
         })),
         item_total: totals.itemTotal,
         packaging_fee: totals.packaging,
@@ -212,6 +217,16 @@ function SectionCheckout({ section }: { section: Section }) {
         discount: totals.discount,
         coupon_code: coupon?.code ?? null,
         delivery_slot: section === "market" ? marketSlot : null,
+        runner_details:
+          section === "services"
+            ? {
+                tasks: items.filter((item) => item.runner).map((item) => ({
+                  steps: item.runner?.steps ?? [],
+                  total_km: item.runner?.steps.reduce((sum, step) => sum + Math.max(0, step.km), 0) ?? 0,
+                  fee: item.price,
+                })),
+              }
+            : null,
         savings: totals.savings + totals.discount,
         total: totals.grand,
         payment_method: payment,
@@ -266,10 +281,32 @@ function SectionCheckout({ section }: { section: Section }) {
                     : `${i.unit} · ${rupees(i.price)}`}
                 </p>
               </div>
-              {!i.loose && !i.runner && (
+              {i.loose ? (
+                (() => {
+                  const looseItem = looseItems.find((item) => item.id === i.id);
+                  return looseItem ? (
+                    <div className="w-44 shrink-0">
+                      <LooseWeightControl item={looseItem} initialGrams={i.loose.grams} mode="cart" />
+                    </div>
+                  ) : null;
+                })()
+              ) : !i.runner ? (
                 <div className="w-24 shrink-0">
                   <QtyButton size="sm" section={section} item={i} />
                 </div>
+              ) : null}
+              {section === "market" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={i.expressDelivery ? "default" : "outline"}
+                  aria-pressed={Boolean(i.expressDelivery)}
+                  onClick={() => toggleExpress(i.id)}
+                  className="shrink-0 px-2 text-[10px]"
+                >
+                  <Clock3 className="h-3 w-3" />
+                  {t("Express", "एक्सप्रेस")}
+                </Button>
               )}
               <button
                 type="button"
@@ -312,9 +349,7 @@ function SectionCheckout({ section }: { section: Section }) {
                       {t(s.subEn, s.subHi)}
                     </span>
                   </span>
-                  {s.id === "instant" && (
-                    <span className="text-xs font-bold">+{rupees(FEES.expressFee)}</span>
-                  )}
+                  <span className="text-[10px] font-bold text-primary">{t("Combined", "एक साथ")}</span>
                 </button>
               ))}
             </div>
@@ -396,7 +431,7 @@ function SectionCheckout({ section }: { section: Section }) {
           )}
           {totals.expressFee > 0 && (
             <Row
-              label={t("Express (15 min)", "एक्सप्रेस (15 मिनट)")}
+              label={t("Express items", "एक्सप्रेस आइटम")}
               value={rupees(totals.expressFee)}
             />
           )}
@@ -432,12 +467,10 @@ function SectionCheckout({ section }: { section: Section }) {
           {section === "market" && (
             <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
               <Timer className="h-3.5 w-3.5" aria-hidden="true" />
-              {marketSlot === "instant"
-                ? t("Arrives in ~15 min", "लगभग 15 मिनट में")
-                : t(
-                    deliverySlots.find((s) => s.id === marketSlot)?.en ?? "",
-                    deliverySlots.find((s) => s.id === marketSlot)?.hi ?? "",
-                  )}
+              {t(
+                deliverySlots.find((s) => s.id === marketSlot)?.en ?? "Evening Batch (4-8 PM)",
+                deliverySlots.find((s) => s.id === marketSlot)?.hi ?? "शाम की बैच (4-8 बजे)",
+              )}
             </p>
           )}
         </div>

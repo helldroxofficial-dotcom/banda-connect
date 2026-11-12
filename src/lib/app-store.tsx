@@ -41,6 +41,10 @@ export type AppliedCoupon = {
   description_hi: string;
   merchant_name: string | null;
   discount: number;
+  discount_type: string;
+  discount_value: number | string;
+  min_order: number | string;
+  max_discount: number | string | null;
 };
 
 export function computeCouponDiscount(
