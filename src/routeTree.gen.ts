@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as FoodRouteImport } from './routes/food'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as OrdersRouteImport } from './routes/orders'
@@ -38,6 +39,11 @@ const AuthRoute = AuthRouteImport.update({
 const DeliveryRoute = DeliveryRouteImport.update({
   id: '/delivery',
   path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoodRoute = FoodRouteImport.update({
+  id: '/food',
+  path: '/food',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/delivery': typeof DeliveryRoute
+  '/food': typeof FoodRoute
   '/help': typeof HelpRoute
   '/market': typeof MarketRoute
   '/orders': typeof OrdersRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/delivery': typeof DeliveryRoute
+  '/food': typeof FoodRoute
   '/help': typeof HelpRoute
   '/market': typeof MarketRoute
   '/orders': typeof OrdersRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/delivery': typeof DeliveryRoute
+  '/food': typeof FoodRoute
   '/help': typeof HelpRoute
   '/market': typeof MarketRoute
   '/orders': typeof OrdersRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/delivery'
+    | '/food'
     | '/help'
     | '/market'
     | '/orders'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/delivery'
+    | '/food'
     | '/help'
     | '/market'
     | '/orders'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/delivery'
+    | '/food'
     | '/help'
     | '/market'
     | '/orders'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DeliveryRoute: typeof DeliveryRoute
+  FoodRoute: typeof FoodRoute
   HelpRoute: typeof HelpRoute
   MarketRoute: typeof MarketRoute
   OrdersRoute: typeof OrdersRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/delivery'
       fullPath: '/delivery'
       preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/food': {
+      id: '/food'
+      path: '/food'
+      fullPath: '/food'
+      preLoaderRoute: typeof FoodRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DeliveryRoute: DeliveryRoute,
+  FoodRoute: FoodRoute,
   HelpRoute: HelpRoute,
   MarketRoute: MarketRoute,
   OrdersRoute: OrdersRoute,
