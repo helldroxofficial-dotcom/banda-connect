@@ -1,4 +1,4 @@
-import { CalendarDays, Home, LifeBuoy, ShoppingBag, Soup, User, Wrench } from "lucide-react";
+import { CalendarDays, Home, LifeBuoy, ShoppingBag, Soup, Wrench } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useApp } from "@/lib/app-store";
 
