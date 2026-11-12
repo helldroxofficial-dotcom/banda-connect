@@ -4,6 +4,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AREAS, FEES, FOOD_FEES, RUNNER_FEES, runnerQuote } from "@/lib/local-data";
 import type { RunnerStep } from "@/lib/local-data";
+import { marketDeliveryFees, measuredPrice, measuredSavings } from "@/lib/checkout-pricing";
 
 export type Section = "food" | "market" | "services";
 
@@ -30,6 +31,8 @@ export type CartItem = {
   loose?: { perKg: number; grams: number } | null;
   /** Banda Runner task: ordered multi-point steps. */
   runner?: { steps: RunnerStep[] } | null;
+  /** Explicitly requested immediate fulfillment for a Market item. */
+  expressDelivery?: boolean;
 };
 
 export type AppliedCoupon = {
@@ -92,6 +95,7 @@ type SectionCart = {
   addLoose: (item: Omit<CartItem, "qty"> & { loose: { perKg: number; grams: number } }) => void;
   dec: (id: string) => void;
   remove: (id: string) => void;
+  toggleExpress: (id: string) => void;
   clear: () => void;
   totals: SectionTotals;
   coupon: AppliedCoupon | null;
@@ -139,7 +143,7 @@ const emptyTotals: SectionTotals = {
 };
 
 function linePrice(item: CartItem): number {
-  if (item.loose) return Math.round(item.loose.perKg * (item.loose.grams / 1000));
+  if (item.loose) return measuredPrice(item.loose.perKg, item.loose.grams);
   return item.price;
 }
 function lineTotal(item: CartItem): number {
@@ -154,7 +158,12 @@ function calculateTotals(
 ): SectionTotals {
   const count = items.reduce((s, i) => s + i.qty, 0);
   const itemTotal = items.reduce((s, i) => s + lineTotal(i), 0);
-  const savings = items.reduce((s, i) => s + Math.max(0, (i.mrp ?? i.price) - linePrice(i)) * i.qty, 0);
+  const savings = items.reduce((s, i) => {
+    const saved = i.loose
+      ? measuredSavings(i.mrp ?? i.price, i.loose.perKg, i.loose.grams)
+      : Math.max(0, (i.mrp ?? i.price) - linePrice(i));
+    return s + saved * i.qty;
+  }, 0);
 
   if (section === "food") {
     const streetTotal = items.filter((i) => i.kind === "street").reduce((s, i) => s + lineTotal(i), 0);
@@ -172,13 +181,15 @@ function calculateTotals(
   if (section === "market") {
     const hasPackaged = items.some((i) => !i.loose);
     const packaging = hasPackaged ? FEES.packaging : 0;
-    const base = itemTotal >= FEES.freeDeliveryAbove ? 0 : itemTotal < FEES.smallOrderBelow ? FEES.smallOrderFee : FEES.standardFee;
-    const delivery = base;
-    const expressFee = marketSlot === "instant" && itemTotal > 0 ? FEES.expressFee : 0;
+    const { delivery, expressFee } = marketDeliveryFees(
+      itemTotal,
+      itemTotal,
+      items.some((item) => item.expressDelivery),
+    );
     const discount = applied ? computeCouponDiscount(applied as never, itemTotal) : 0;
     return {
       ...emptyTotals, count, itemTotal, savings, packaging, delivery, expressFee, discount,
-      deliverySaved: base === 0 ? FEES.standardFee : 0,
+      deliverySaved: delivery === 0 && itemTotal > FEES.freeDeliveryAbove ? FEES.standardFee : 0,
       grand: Math.max(0, itemTotal + packaging + delivery + expressFee - discount),
     };
   }
@@ -329,6 +340,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCartsState((prev) => ({ ...prev, [section]: prev[section].filter((i) => i.id !== id) }));
   }, []);
 
+  const toggleExpress = useCallback((section: Section, id: string) => {
+    setCartsState((prev) => ({
+      ...prev,
+      [section]: prev[section].map((item) =>
+        item.id === id ? { ...item, expressDelivery: !item.expressDelivery } : item,
+      ),
+    }));
+  }, []);
+
   const clear = useCallback((section: Section) => {
     setCartsState((prev) => ({ ...prev, [section]: [] }));
     setCoupons((prev) => ({ ...prev, [section]: null }));
@@ -353,13 +373,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addLoose: (item) => addLoose(section, item),
         dec: (id) => dec(section, id),
         remove: (id) => remove(section, id),
+        toggleExpress: (id) => toggleExpress(section, id),
         clear: () => clear(section),
         totals,
         coupon: applied,
         setCoupon: (c) => setCoupon(section, c),
       };
     },
-    [cartsState, coupons, add, addLoose, dec, remove, clear, setCoupon, marketSlot],
+    [cartsState, coupons, add, addLoose, dec, remove, toggleExpress, clear, setCoupon, marketSlot],
   );
 
   const food = useMemo(() => makeCart("food"), [makeCart]);
